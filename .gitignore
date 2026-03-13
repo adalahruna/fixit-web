@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Project docs (tidak di-push)
 docs/
+
+# Supabase
+.supabase/
