@@ -83,16 +83,36 @@
   - `frontend/src/app/admin/mechanics/[id]/edit/page.tsx`
   - `frontend/src/components/mechanics/MechanicForm.tsx`
 - **Status:** Tested & confirmed working by user
+- **Commit:** `feat: implement Week 6 - CRUD master data (service types & mechanics)`
+
+### Week 7: Booking Flow (15 Mar 2026)
+- ✅ Create booking form (Customer)
+  - Form dengan jadwal, data motor, pilih servis, keluhan
+  - Validasi BR-11: keluhan wajib jika tidak pilih servis
+  - Hitung estimasi durasi otomatis
+- ✅ List bookings (Customer)
+  - Tampil semua booking customer
+  - Status badge dengan warna
+  - Filter by customer_id (RLS)
+- ✅ Detail booking (Customer)
+  - Detail lengkap booking
+  - Tampil servis, keluhan, mekanik, progres
+- ✅ Customer dashboard dengan quick links
+- **Files:**
+  - `frontend/src/lib/bookings/actions.ts`
+  - `frontend/src/components/bookings/BookingForm.tsx`
+  - `frontend/src/app/customer/bookings/new/page.tsx`
+  - `frontend/src/app/customer/bookings/page.tsx`
+  - `frontend/src/app/customer/bookings/[id]/page.tsx`
+  - `frontend/src/app/customer/page.tsx`
+- **Status:** Ready to test
 - **Commit:** Ready to commit
 
 ---
 
 ## 🚧 In Progress
 
-### Week 7: Booking Flow (Next)
-- [ ] Create booking form (Customer)
-- [ ] Slot availability validation
-- [ ] List & detail booking (Customer)
+_Tidak ada task yang sedang dikerjakan_
 
 ---
 
