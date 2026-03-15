@@ -153,7 +153,7 @@ export default async function BookingDetailPage({
             <h2 className="text-lg font-semibold mb-3 text-gray-900">Jenis Servis</h2>
             {booking.booking_services && booking.booking_services.length > 0 ? (
               <div className="space-y-2">
-                {booking.booking_services.map((bs: any, idx: number) => (
+                {booking.booking_services.map((bs: { service_type?: { name?: string; description?: string; default_duration_minutes?: number; price?: number } }, idx: number) => (
                   <div key={idx} className="bg-gray-50 p-4 rounded-lg">
                     <p className="font-medium text-gray-900">{bs.service_type?.name}</p>
                     {bs.service_type?.description && (
