@@ -16,9 +16,8 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
   // Parse form data
   const scheduledDate = formData.get('scheduled_date') as string;
   const scheduledTime = formData.get('scheduled_time') as string;
-  const motorcycleBrand = formData.get('motorcycle_brand') as string;
-  const motorcycleModel = formData.get('motorcycle_model') as string;
-  const motorcyclePlate = formData.get('motorcycle_plate') as string;
+  const vehiclePlate = formData.get('vehicle_plate') as string;
+  const vehicleType = formData.get('vehicle_type') as string;
   const consultationText = formData.get('consultation_text') as string;
   const serviceIds = formData.getAll('service_ids') as string[];
 
@@ -27,7 +26,7 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     return { error: 'Tanggal dan jam servis wajib diisi' };
   }
 
-  if (!motorcycleBrand || !motorcycleModel || !motorcyclePlate) {
+  if (!vehiclePlate || !vehicleType) {
     return { error: 'Data motor wajib diisi lengkap' };
   }
 
@@ -36,10 +35,10 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     return { error: 'Jika tidak memilih jenis servis, keluhan/konsultasi wajib diisi' };
   }
 
-  // Combine date and time
-  const scheduledAt = `${scheduledDate}T${scheduledTime}:00`;
+  // Combine date and time for schedule_start
+  const scheduleStart = `${scheduledDate}T${scheduledTime}:00`;
 
-  // Calculate estimated duration
+  // Calculate estimated duration and schedule_end
   let estimatedDurationMinutes = 60; // Default jika tidak ada servis
   if (serviceIds.length > 0) {
     const { data: services } = await supabase
@@ -55,17 +54,19 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     }
   }
 
+  // Calculate schedule_end
+  const scheduleEnd = new Date(new Date(scheduleStart).getTime() + estimatedDurationMinutes * 60000).toISOString();
+
   // Create booking
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
     .insert({
       customer_id: user.id,
-      scheduled_at: scheduledAt,
-      status: 'PENDING',
-      motorcycle_brand: motorcycleBrand,
-      motorcycle_model: motorcycleModel,
-      motorcycle_plate: motorcyclePlate,
-      estimated_duration_minutes: estimatedDurationMinutes,
+      schedule_start: scheduleStart,
+      schedule_end: scheduleEnd,
+      status: 'pending',
+      vehicle_plate: vehiclePlate,
+      vehicle_type: vehicleType,
     })
     .select()
     .single();
@@ -74,19 +75,27 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     return { error: bookingError.message };
   }
 
-  // Insert booking_services
+  // Insert booking_services with duration
   if (serviceIds.length > 0) {
-    const bookingServices = serviceIds.map(serviceId => ({
-      booking_id: booking.id,
-      service_type_id: serviceId,
-    }));
+    const { data: services } = await supabase
+      .from('service_types')
+      .select('id, default_duration_minutes')
+      .in('id', serviceIds);
 
-    const { error: servicesError } = await supabase
-      .from('booking_services')
-      .insert(bookingServices);
+    if (services) {
+      const bookingServices = services.map(service => ({
+        booking_id: booking.id,
+        service_type_id: service.id,
+        duration_minutes: service.default_duration_minutes,
+      }));
 
-    if (servicesError) {
-      return { error: servicesError.message };
+      const { error: servicesError } = await supabase
+        .from('booking_services')
+        .insert(bookingServices);
+
+      if (servicesError) {
+        return { error: servicesError.message };
+      }
     }
   }
 
@@ -96,8 +105,7 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
       .from('booking_consultations')
       .insert({
         booking_id: booking.id,
-        consultation_text: consultationText,
-        created_by: user.id,
+        complaint_text: consultationText,
       });
 
     if (consultationError) {

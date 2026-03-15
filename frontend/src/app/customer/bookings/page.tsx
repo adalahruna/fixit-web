@@ -22,29 +22,29 @@ export default async function BookingsPage() {
       )
     `)
     .eq('customer_id', user?.id)
-    .order('scheduled_at', { ascending: false });
+    .order('schedule_start', { ascending: false });
 
   // Status badge styling
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      CONFIRMED: 'bg-blue-100 text-blue-800',
-      QUEUED: 'bg-purple-100 text-purple-800',
-      IN_PROGRESS: 'bg-green-100 text-green-800',
-      DONE: 'bg-gray-100 text-gray-800',
-      CANCELLED: 'bg-red-100 text-red-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      confirmed: 'bg-blue-100 text-blue-800',
+      queued: 'bg-purple-100 text-purple-800',
+      in_progress: 'bg-green-100 text-green-800',
+      done: 'bg-gray-100 text-gray-800',
+      cancelled: 'bg-red-100 text-red-800',
     };
     return styles[status] || 'bg-gray-100 text-gray-800';
   };
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      PENDING: 'Menunggu',
-      CONFIRMED: 'Dikonfirmasi',
-      QUEUED: 'Dalam Antrian',
-      IN_PROGRESS: 'Sedang Dikerjakan',
-      DONE: 'Selesai',
-      CANCELLED: 'Dibatalkan',
+      pending: 'Menunggu',
+      confirmed: 'Dikonfirmasi',
+      queued: 'Dalam Antrian',
+      in_progress: 'Sedang Dikerjakan',
+      done: 'Selesai',
+      cancelled: 'Dibatalkan',
     };
     return labels[status] || status;
   };
@@ -82,9 +82,9 @@ export default async function BookingsPage() {
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {booking.motorcycle_brand} {booking.motorcycle_model}
+                    {booking.vehicle_type}
                   </h3>
-                  <p className="text-sm text-gray-600">{booking.motorcycle_plate}</p>
+                  <p className="text-sm text-gray-600">{booking.vehicle_plate}</p>
                 </div>
                 <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusBadge(booking.status)}`}>
                   {getStatusLabel(booking.status)}
@@ -95,7 +95,7 @@ export default async function BookingsPage() {
                 <div>
                   <span className="text-gray-600">Jadwal:</span>
                   <p className="font-medium">
-                    {new Date(booking.scheduled_at).toLocaleDateString('id-ID', {
+                    {new Date(booking.schedule_start).toLocaleDateString('id-ID', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
@@ -103,7 +103,7 @@ export default async function BookingsPage() {
                     })}
                   </p>
                   <p className="font-medium">
-                    {new Date(booking.scheduled_at).toLocaleTimeString('id-ID', {
+                    {new Date(booking.schedule_start).toLocaleTimeString('id-ID', {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
@@ -126,9 +126,12 @@ export default async function BookingsPage() {
                 </div>
               </div>
 
-              {booking.estimated_duration_minutes && (
+              {booking.schedule_end && (
                 <div className="mt-3 text-sm text-gray-600">
-                  Estimasi durasi: {booking.estimated_duration_minutes} menit
+                  Estimasi selesai: {new Date(booking.schedule_end).toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </div>
               )}
             </Link>

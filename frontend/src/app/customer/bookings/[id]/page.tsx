@@ -30,11 +30,18 @@ export default async function BookingDetailPage({
         )
       ),
       booking_consultations (
-        consultation_text,
+        complaint_text,
         created_at
       ),
-      mechanic:mechanics (
-        name
+      assignments (
+        mechanic:mechanics (
+          name
+        )
+      ),
+      service_progress (
+        start_time,
+        end_time,
+        status
       )
     `)
     .eq('id', id)
@@ -47,24 +54,24 @@ export default async function BookingDetailPage({
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      CONFIRMED: 'bg-blue-100 text-blue-800',
-      QUEUED: 'bg-purple-100 text-purple-800',
-      IN_PROGRESS: 'bg-green-100 text-green-800',
-      DONE: 'bg-gray-100 text-gray-800',
-      CANCELLED: 'bg-red-100 text-red-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      confirmed: 'bg-blue-100 text-blue-800',
+      queued: 'bg-purple-100 text-purple-800',
+      in_progress: 'bg-green-100 text-green-800',
+      done: 'bg-gray-100 text-gray-800',
+      cancelled: 'bg-red-100 text-red-800',
     };
     return styles[status] || 'bg-gray-100 text-gray-800';
   };
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      PENDING: 'Menunggu Konfirmasi',
-      CONFIRMED: 'Dikonfirmasi',
-      QUEUED: 'Dalam Antrian',
-      IN_PROGRESS: 'Sedang Dikerjakan',
-      DONE: 'Selesai',
-      CANCELLED: 'Dibatalkan',
+      pending: 'Menunggu Konfirmasi',
+      confirmed: 'Dikonfirmasi',
+      queued: 'Dalam Antrian',
+      in_progress: 'Sedang Dikerjakan',
+      done: 'Selesai',
+      cancelled: 'Dibatalkan',
     };
     return labels[status] || status;
   };
@@ -102,7 +109,7 @@ export default async function BookingDetailPage({
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-700">
                 <span className="font-medium">Tanggal:</span>{' '}
-                {new Date(booking.scheduled_at).toLocaleDateString('id-ID', {
+                {new Date(booking.schedule_start).toLocaleDateString('id-ID', {
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
@@ -110,16 +117,19 @@ export default async function BookingDetailPage({
                 })}
               </p>
               <p className="text-gray-700 mt-1">
-                <span className="font-medium">Jam:</span>{' '}
-                {new Date(booking.scheduled_at).toLocaleTimeString('id-ID', {
+                <span className="font-medium">Jam Mulai:</span>{' '}
+                {new Date(booking.schedule_start).toLocaleTimeString('id-ID', {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
               </p>
-              {booking.estimated_duration_minutes && (
+              {booking.schedule_end && (
                 <p className="text-gray-700 mt-1">
-                  <span className="font-medium">Estimasi Durasi:</span>{' '}
-                  {booking.estimated_duration_minutes} menit
+                  <span className="font-medium">Estimasi Selesai:</span>{' '}
+                  {new Date(booking.schedule_end).toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </p>
               )}
             </div>
@@ -130,13 +140,10 @@ export default async function BookingDetailPage({
             <h2 className="text-lg font-semibold mb-3 text-gray-900">Data Motor</h2>
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-700">
-                <span className="font-medium">Merk:</span> {booking.motorcycle_brand}
+                <span className="font-medium">Jenis Motor:</span> {booking.vehicle_type}
               </p>
               <p className="text-gray-700 mt-1">
-                <span className="font-medium">Model:</span> {booking.motorcycle_model}
-              </p>
-              <p className="text-gray-700 mt-1">
-                <span className="font-medium">Plat Nomor:</span> {booking.motorcycle_plate}
+                <span className="font-medium">Plat Nomor:</span> {booking.vehicle_plate}
               </p>
             </div>
           </div>
@@ -174,37 +181,37 @@ export default async function BookingDetailPage({
               <h2 className="text-lg font-semibold mb-3 text-gray-900">Keluhan/Konsultasi</h2>
               <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
                 <p className="text-gray-800 whitespace-pre-wrap">
-                  {booking.booking_consultations[0].consultation_text}
+                  {booking.booking_consultations[0].complaint_text}
                 </p>
               </div>
             </div>
           )}
 
           {/* Mekanik */}
-          {booking.mechanic && (
+          {booking.assignments && booking.assignments.length > 0 && booking.assignments[0].mechanic && (
             <div>
               <h2 className="text-lg font-semibold mb-3 text-gray-900">Mekanik</h2>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <span className="font-medium">Nama:</span> {booking.mechanic.name}
+                  <span className="font-medium">Nama:</span> {booking.assignments[0].mechanic.name}
                 </p>
               </div>
             </div>
           )}
 
           {/* Progress Info */}
-          {booking.actual_start_time && (
+          {booking.service_progress && booking.service_progress.length > 0 && booking.service_progress[0].start_time && (
             <div>
               <h2 className="text-lg font-semibold mb-3 text-gray-900">Progres Servis</h2>
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                 <p className="text-gray-700">
                   <span className="font-medium">Mulai:</span>{' '}
-                  {new Date(booking.actual_start_time).toLocaleString('id-ID')}
+                  {new Date(booking.service_progress[0].start_time).toLocaleString('id-ID')}
                 </p>
-                {booking.actual_finish_time && (
+                {booking.service_progress[0].end_time && (
                   <p className="text-gray-700">
                     <span className="font-medium">Selesai:</span>{' '}
-                    {new Date(booking.actual_finish_time).toLocaleString('id-ID')}
+                    {new Date(booking.service_progress[0].end_time).toLocaleString('id-ID')}
                   </p>
                 )}
               </div>
