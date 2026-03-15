@@ -3,7 +3,7 @@
 ## Timeline
 - **Tanggal Mulai:** 14 Maret 2026
 - **Target Selesai:** Week 16 (sesuai sprint plan)
-- **Status Saat Ini:** Week 1-2 (Foundation & Auth)
+- **Status Saat Ini:** Week 6 (Master Data CRUD) ✅ → Week 7 (Booking Flow)
 
 ---
 
@@ -53,23 +53,50 @@
   - `frontend/src/app/owner/layout.tsx` + `page.tsx`
 - ✅ Update homepage dengan CTA login/register
 
+### Week 5: Auth Testing & RLS (14 Mar 2026)
+- ✅ Test login/register flow
+- ✅ Setup RLS policies di Supabase (002_rls_policies.sql)
+- ✅ Error handling & validation feedback
+- ✅ Fix email rate limit (disable confirmation untuk dev)
+- **Commit:** `feat: implement auth & RBAC with RLS policies`
+
+### Week 6: Master Data CRUD (15 Mar 2026)
+- ✅ CRUD Service Types (Admin)
+  - List, Create, Edit service types
+  - Validation (nama, durasi > 0)
+  - Server actions pattern
+- ✅ CRUD Mechanics (Admin)
+  - List, Create, Edit mechanics
+  - Status aktif/nonaktif
+  - Kapasitas harian (opsional)
+- ✅ Reusable form components (ServiceForm, MechanicForm)
+- ✅ Role-based access (admin & owner only)
+- **Files:**
+  - `frontend/src/lib/services/actions.ts`
+  - `frontend/src/lib/mechanics/actions.ts`
+  - `frontend/src/app/admin/services/page.tsx`
+  - `frontend/src/app/admin/services/new/page.tsx`
+  - `frontend/src/app/admin/services/[id]/edit/page.tsx`
+  - `frontend/src/components/services/ServiceForm.tsx`
+  - `frontend/src/app/admin/mechanics/page.tsx`
+  - `frontend/src/app/admin/mechanics/new/page.tsx`
+  - `frontend/src/app/admin/mechanics/[id]/edit/page.tsx`
+  - `frontend/src/components/mechanics/MechanicForm.tsx`
+- **Status:** Tested & confirmed working by user
+- **Commit:** Ready to commit
+
 ---
 
 ## 🚧 In Progress
 
-### Week 5: Auth Implementation
-- [ ] Test login/register flow
-- [ ] Setup RLS policies di Supabase
-- [ ] Error handling & validation feedback
+### Week 7: Booking Flow (Next)
+- [ ] Create booking form (Customer)
+- [ ] Slot availability validation
+- [ ] List & detail booking (Customer)
 
 ---
 
 ## 📋 Next Tasks (Berdasarkan Sprint Plan)
-
-### Week 6: Master Data CRUD
-- [ ] CRUD Service Types (Admin)
-- [ ] CRUD Mechanics (Admin)
-- [ ] Operating Hours management (Admin)
 
 ### Week 7: Booking Flow
 - [ ] Create booking form (Customer)
