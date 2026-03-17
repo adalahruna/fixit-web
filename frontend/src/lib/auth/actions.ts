@@ -50,10 +50,16 @@ export async function register(_prevState: unknown, formData: FormData) {
     name: formData.get('name') as string,
   };
 
-  // Create auth user
+  // Create auth user dengan role di metadata
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
+    options: {
+      data: {
+        name: data.name,
+        role: 'customer', // Simpan role di metadata
+      },
+    },
   });
 
   if (authError) {

@@ -42,16 +42,41 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Jika sudah login, cek role-based access
-  if (user && !isPublicRoute) {
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+  // Jika sudah login, redirect dari landing/auth pages ke dashboard
+  if (user) {
+    // Ambil role dari user metadata (tidak perlu query DB, lebih cepat)
+    let role = user.user_metadata?.role as string;
+
+    // Fallback: jika role tidak ada di metadata, query dari database dan sync ke metadata
+    if (!role) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      role = userData?.role || 'customer';
+
+      // Sync role ke metadata untuk next time (agar tidak perlu query DB lagi)
+      if (userData?.role) {
+        await supabase.auth.updateUser({
+          data: { role: userData.role }
+        });
+      }
+    }
+
+    // Validasi role
+    const validRoles = ['customer', 'admin', 'mechanic', 'owner'];
+    if (!validRoles.includes(role)) {
+      role = 'customer';
+    }
 
     const path = request.nextUrl.pathname;
-    const role = userData?.role;
+
+    // Redirect dari landing page atau auth pages ke dashboard sesuai role
+    if (path === '/' || path === '/login' || path === '/register') {
+      return NextResponse.redirect(new URL(`/${role}`, request.url));
+    }
 
     // Role-based routing protection
     if (path.startsWith('/customer') && role !== 'customer') {

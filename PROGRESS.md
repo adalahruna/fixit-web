@@ -3,7 +3,8 @@
 ## Timeline
 - **Tanggal Mulai:** 14 Maret 2026
 - **Target Selesai:** Week 16 (sesuai sprint plan)
-- **Status Saat Ini:** Week 6 (Master Data CRUD) ✅ → Week 7 (Booking Flow)
+- **Status Saat Ini:** Week 9 (Assignment & Queue) ✅ → Week 11 (Service Progress)
+- **Progress:** 9/16 weeks (56% complete)
 
 ---
 
