@@ -251,12 +251,46 @@ export default async function MechanicBookingDetailPage({
             </div>
           )}
 
-          {/* Action Buttons - Coming Soon */}
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-            <p className="text-sm text-blue-800">
-              Fitur update progres (Start/Done) akan segera tersedia di Week 11.
-            </p>
-          </div>
+          {/* Action Buttons */}
+          {progress && (
+            <div className="border-t pt-6">
+              {progress.status === 'queued' && (
+                <form action={async () => {
+                  'use server';
+                  const { startService } = await import('@/lib/progress/actions');
+                  await startService(id);
+                }}>
+                  <button
+                    type="submit"
+                    className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium"
+                  >
+                    🚀 Mulai Servis
+                  </button>
+                </form>
+              )}
+
+              {progress.status === 'in_progress' && (
+                <form action={async () => {
+                  'use server';
+                  const { completeService } = await import('@/lib/progress/actions');
+                  await completeService(id);
+                }}>
+                  <button
+                    type="submit"
+                    className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
+                  >
+                    ✅ Selesai
+                  </button>
+                </form>
+              )}
+
+              {progress.status === 'done' && (
+                <div className="bg-green-50 border border-green-200 p-4 rounded-lg text-center">
+                  <p className="text-green-800 font-medium">✅ Servis sudah selesai</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
