@@ -1,7 +1,8 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import { createBooking } from '@/lib/bookings/actions';
+import { localToUTC } from '@/lib/utils/datetime';
 
 interface ServiceType {
   id: string;
@@ -17,6 +18,70 @@ interface BookingFormProps {
 
 export function BookingForm({ services }: BookingFormProps) {
   const [state, formAction] = useActionState(createBooking, null);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [slotStatus, setSlotStatus] = useState<{
+    checking: boolean;
+    available?: boolean;
+    message?: string;
+  }>({ checking: false });
+
+  // Calculate estimated duration based on selected services
+  const estimatedDuration = selectedServices.length > 0
+    ? services
+        .filter(s => selectedServices.includes(s.id))
+        .reduce((sum, s) => sum + s.default_duration_minutes, 0)
+    : 60; // Default 60 minutes if no service selected
+
+  // Check slot availability when date/time/services change
+  useEffect(() => {
+    const checkSlot = async () => {
+      if (!selectedDate || !selectedTime) {
+        return;
+      }
+
+      setSlotStatus({ checking: true });
+
+      try {
+        const scheduleStart = localToUTC(selectedDate, selectedTime);
+        
+        const response = await fetch('/api/check-slot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scheduleStart,
+            estimatedDurationMinutes: estimatedDuration,
+          }),
+        });
+
+        const result = await response.json();
+        setSlotStatus({
+          checking: false,
+          available: result.available,
+          message: result.message,
+        });
+      } catch {
+        setSlotStatus({
+          checking: false,
+          available: false,
+          message: 'Gagal memeriksa ketersediaan slot',
+        });
+      }
+    };
+
+    // Debounce check
+    const timer = setTimeout(checkSlot, 500);
+    return () => clearTimeout(timer);
+  }, [selectedDate, selectedTime, estimatedDuration]);
+
+  const handleServiceToggle = (serviceId: string) => {
+    setSelectedServices(prev =>
+      prev.includes(serviceId)
+        ? prev.filter(id => id !== serviceId)
+        : [...prev, serviceId]
+    );
+  };
 
   return (
     <form action={formAction} className="space-y-6">
@@ -41,6 +106,8 @@ export function BookingForm({ services }: BookingFormProps) {
               name="scheduled_date"
               required
               min={new Date().toISOString().split('T')[0]}
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -54,11 +121,32 @@ export function BookingForm({ services }: BookingFormProps) {
               id="scheduled_time"
               name="scheduled_time"
               required
+              value={selectedTime}
+              onChange={(e) => setSelectedTime(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <p className="text-xs text-gray-500 mt-1">Waktu Indonesia Barat (WIB)</p>
           </div>
         </div>
+
+        {/* Slot Availability Feedback */}
+        {selectedDate && selectedTime && (
+          <div className="mt-4">
+            {slotStatus.checking ? (
+              <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700">
+                🔄 Memeriksa ketersediaan slot...
+              </div>
+            ) : slotStatus.available === true ? (
+              <div className="bg-green-50 border border-green-200 p-3 rounded-md text-sm text-green-700">
+                ✅ {slotStatus.message}
+              </div>
+            ) : slotStatus.available === false ? (
+              <div className="bg-red-50 border border-red-200 p-3 rounded-md text-sm text-red-700">
+                ❌ {slotStatus.message}
+              </div>
+            ) : null}
+          </div>
+        )}
       </div>
 
       {/* Data Motor */}
@@ -110,6 +198,8 @@ export function BookingForm({ services }: BookingFormProps) {
                 type="checkbox"
                 name="service_ids"
                 value={service.id}
+                checked={selectedServices.includes(service.id)}
+                onChange={() => handleServiceToggle(service.id)}
                 className="mt-1"
               />
               <div className="flex-1">
@@ -155,7 +245,8 @@ export function BookingForm({ services }: BookingFormProps) {
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          disabled={slotStatus.available === false}
+          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           Buat Booking
         </button>

@@ -4,6 +4,7 @@ import { createClient } from '../supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { localToUTC } from '../utils/datetime';
+import { checkSlotAvailability } from '../utils/slot-availability';
 
 export async function createBooking(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
@@ -58,6 +59,13 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
 
   // Calculate schedule_end
   const scheduleEnd = new Date(scheduleStartDate.getTime() + estimatedDurationMinutes * 60000).toISOString();
+
+  // Check slot availability
+  const slotCheck = await checkSlotAvailability(scheduleStart, estimatedDurationMinutes);
+  
+  if (!slotCheck.available) {
+    return { error: slotCheck.message || 'Slot tidak tersedia' };
+  }
 
   // Create booking
   const bookingData = {
