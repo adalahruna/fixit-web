@@ -55,12 +55,17 @@ export async function startService(bookingId: string) {
   }
 
   // Update booking status
-  await supabase
+  const { error: bookingError } = await supabase
     .from('bookings')
     .update({ status: 'in_progress' })
     .eq('id', bookingId);
 
+  if (bookingError) {
+    return { error: bookingError.message };
+  }
+
   revalidatePath(`/mechanic/queue/${bookingId}`);
+  revalidatePath(`/customer/bookings/${bookingId}`);
   return { success: true };
 }
 
@@ -115,13 +120,18 @@ export async function completeService(bookingId: string) {
     return { error: error.message };
   }
 
-  // Update booking status to completed
-  await supabase
+  // Update booking status to done
+  const { error: bookingError } = await supabase
     .from('bookings')
-    .update({ status: 'completed' })
+    .update({ status: 'done' })
     .eq('id', bookingId);
+
+  if (bookingError) {
+    return { error: bookingError.message };
+  }
 
   revalidatePath(`/mechanic/queue/${bookingId}`);
   revalidatePath('/mechanic/queue');
+  revalidatePath(`/customer/bookings/${bookingId}`);
   return { success: true };
 }

@@ -87,7 +87,8 @@ export default async function AdminBookingDetailPage({
     return labels[status] || status;
   };
 
-  const isAssigned = booking.assignments && booking.assignments.length > 0;
+  const isAssigned = booking.assignments && (Array.isArray(booking.assignments) ? booking.assignments.length > 0 : !!booking.assignments);
+  const assignment = Array.isArray(booking.assignments) ? booking.assignments[0] : booking.assignments;
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -205,12 +206,17 @@ export default async function AdminBookingDetailPage({
               </div>
 
               {/* Keluhan/Konsultasi */}
-              {booking.booking_consultations && booking.booking_consultations.length > 0 && (
+              {booking.booking_consultations && (
+                (Array.isArray(booking.booking_consultations) && booking.booking_consultations.length > 0) ||
+                (!Array.isArray(booking.booking_consultations) && booking.booking_consultations.complaint_text)
+              ) && (
                 <div>
                   <h2 className="text-lg font-semibold mb-3 text-gray-900">Keluhan/Konsultasi Customer</h2>
                   <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
                     <p className="text-gray-800 whitespace-pre-wrap">
-                      {booking.booking_consultations[0].complaint_text}
+                      {Array.isArray(booking.booking_consultations)
+                        ? booking.booking_consultations[0].complaint_text
+                        : booking.booking_consultations.complaint_text}
                     </p>
                   </div>
                 </div>
@@ -228,14 +234,14 @@ export default async function AdminBookingDetailPage({
               <div className="space-y-4">
                 <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
                   <p className="text-sm text-green-800 font-medium mb-2">Sudah Di-assign</p>
-                  <p className="text-gray-900 font-semibold">{booking.assignments[0].mechanic?.name}</p>
+                  <p className="text-gray-900 font-semibold">{assignment?.mechanic?.name}</p>
                   <p className="text-sm text-gray-600 mt-1">
-                    Posisi Queue: #{booking.assignments[0].queue_position}
+                    Posisi Queue: #{assignment?.queue_position}
                   </p>
                 </div>
                 <AssignMechanicForm 
                   bookingId={booking.id} 
-                  currentMechanicId={booking.assignments[0].mechanic?.id}
+                  currentMechanicId={assignment?.mechanic?.id}
                   mechanics={mechanics || []}
                   isAssigned={true}
                 />

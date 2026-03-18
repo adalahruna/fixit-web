@@ -102,7 +102,7 @@ export default async function AdminBookingsPage() {
                     <div className="text-sm text-gray-900">{booking.vehicle_type}</div>
                     <div className="text-sm text-gray-500">{booking.vehicle_plate}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap" suppressHydrationWarning>
                     <div className="text-sm text-gray-900">
                       {new Date(booking.schedule_start).toLocaleDateString('id-ID', {
                         day: 'numeric',
@@ -123,9 +123,9 @@ export default async function AdminBookingsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {booking.assignments && booking.assignments.length > 0 && booking.assignments[0].mechanic
-                      ? booking.assignments[0].mechanic.name
-                      : '-'}
+                    {booking.assignments && (Array.isArray(booking.assignments) 
+                      ? (booking.assignments.length > 0 && booking.assignments[0].mechanic?.name)
+                      : booking.assignments.mechanic?.name) || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <Link

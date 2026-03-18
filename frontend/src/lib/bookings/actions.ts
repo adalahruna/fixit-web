@@ -35,8 +35,9 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     return { error: 'Jika tidak memilih jenis servis, keluhan/konsultasi wajib diisi' };
   }
 
-  // Combine date and time for schedule_start
-  const scheduleStart = `${scheduledDate}T${scheduledTime}:00`;
+  // Combine date and time for schedule_start with timezone
+  const scheduleStartDate = new Date(`${scheduledDate}T${scheduledTime}:00`);
+  const scheduleStart = scheduleStartDate.toISOString();
 
   // Calculate estimated duration and schedule_end
   let estimatedDurationMinutes = 60; // Default jika tidak ada servis
@@ -55,19 +56,21 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
   }
 
   // Calculate schedule_end
-  const scheduleEnd = new Date(new Date(scheduleStart).getTime() + estimatedDurationMinutes * 60000).toISOString();
+  const scheduleEnd = new Date(scheduleStartDate.getTime() + estimatedDurationMinutes * 60000).toISOString();
 
   // Create booking
+  const bookingData = {
+    customer_id: user.id,
+    schedule_start: scheduleStart,
+    schedule_end: scheduleEnd,
+    status: 'pending',
+    vehicle_plate: vehiclePlate,
+    vehicle_type: vehicleType,
+  };
+  
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
-    .insert({
-      customer_id: user.id,
-      schedule_start: scheduleStart,
-      schedule_end: scheduleEnd,
-      status: 'pending',
-      vehicle_plate: vehiclePlate,
-      vehicle_type: vehicleType,
-    })
+    .insert(bookingData)
     .select()
     .single();
 

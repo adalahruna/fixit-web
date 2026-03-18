@@ -82,9 +82,10 @@ export default async function MechanicBookingDetailPage({
   }
 
   const booking = assignment.booking;
-  const progress = booking.service_progress && booking.service_progress.length > 0 
+  
+  const progress = booking.service_progress && (Array.isArray(booking.service_progress) && booking.service_progress.length > 0)
     ? booking.service_progress[0] 
-    : null;
+    : (Array.isArray(booking.service_progress) ? null : booking.service_progress);
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
@@ -221,12 +222,17 @@ export default async function MechanicBookingDetailPage({
           </div>
 
           {/* Keluhan/Konsultasi */}
-          {booking.booking_consultations && booking.booking_consultations.length > 0 && (
+          {booking.booking_consultations && (
+            (Array.isArray(booking.booking_consultations) && booking.booking_consultations.length > 0 && booking.booking_consultations[0].complaint_text) ||
+            (!Array.isArray(booking.booking_consultations) && booking.booking_consultations.complaint_text)
+          ) && (
             <div>
               <h2 className="text-lg font-semibold mb-3 text-gray-900">Keluhan/Konsultasi Customer</h2>
               <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
                 <p className="text-gray-800 whitespace-pre-wrap">
-                  {booking.booking_consultations[0].complaint_text}
+                  {Array.isArray(booking.booking_consultations) 
+                    ? booking.booking_consultations[0].complaint_text 
+                    : booking.booking_consultations.complaint_text}
                 </p>
               </div>
             </div>
