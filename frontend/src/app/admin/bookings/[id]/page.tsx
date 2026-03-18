@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { AssignMechanicForm } from '@/components/assignments/AssignMechanicForm';
+import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
 
 export default async function AdminBookingDetailPage({
   params,
@@ -139,27 +140,16 @@ export default async function AdminBookingDetailPage({
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-gray-700">
                     <span className="font-medium">Tanggal:</span>{' '}
-                    {new Date(booking.schedule_start).toLocaleDateString('id-ID', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
+                    {formatDateWIB(booking.schedule_start)}
                   </p>
                   <p className="text-gray-700 mt-1">
                     <span className="font-medium">Jam Mulai:</span>{' '}
-                    {new Date(booking.schedule_start).toLocaleTimeString('id-ID', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {formatTimeWIB(booking.schedule_start)} WIB
                   </p>
                   {booking.schedule_end && (
                     <p className="text-gray-700 mt-1">
                       <span className="font-medium">Estimasi Selesai:</span>{' '}
-                      {new Date(booking.schedule_end).toLocaleTimeString('id-ID', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {formatTimeWIB(booking.schedule_end)} WIB
                     </p>
                   )}
                 </div>

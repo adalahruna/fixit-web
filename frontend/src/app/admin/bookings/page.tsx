@@ -1,6 +1,7 @@
 import { requireRole } from '@/lib/auth/utils';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
 
 export default async function AdminBookingsPage() {
   await requireRole(['admin', 'owner']);
@@ -102,19 +103,12 @@ export default async function AdminBookingsPage() {
                     <div className="text-sm text-gray-900">{booking.vehicle_type}</div>
                     <div className="text-sm text-gray-500">{booking.vehicle_plate}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap" suppressHydrationWarning>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {new Date(booking.schedule_start).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
+                      {formatDateWIB(booking.schedule_start).split(',')[0]}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {new Date(booking.schedule_start).toLocaleTimeString('id-ID', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {formatTimeWIB(booking.schedule_start)} WIB
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

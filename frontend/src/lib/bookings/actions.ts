@@ -3,6 +3,7 @@
 import { createClient } from '../supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { localToUTC } from '../utils/datetime';
 
 export async function createBooking(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
@@ -35,9 +36,9 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     return { error: 'Jika tidak memilih jenis servis, keluhan/konsultasi wajib diisi' };
   }
 
-  // Combine date and time for schedule_start with timezone
-  const scheduleStartDate = new Date(`${scheduledDate}T${scheduledTime}:00`);
-  const scheduleStart = scheduleStartDate.toISOString();
+  // Combine date and time for schedule_start with WIB timezone
+  const scheduleStart = localToUTC(scheduledDate, scheduledTime);
+  const scheduleStartDate = new Date(scheduleStart);
 
   // Calculate estimated duration and schedule_end
   let estimatedDurationMinutes = 60; // Default jika tidak ada servis

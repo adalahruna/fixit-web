@@ -1,6 +1,7 @@
 import { requireRole } from '@/lib/auth/utils';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
 
 export default async function BookingsPage() {
   await requireRole(['customer']);
@@ -95,18 +96,10 @@ export default async function BookingsPage() {
                 <div>
                   <span className="text-gray-600">Jadwal:</span>
                   <p className="font-medium">
-                    {new Date(booking.schedule_start).toLocaleDateString('id-ID', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
+                    {formatDateWIB(booking.schedule_start)}
                   </p>
                   <p className="font-medium">
-                    {new Date(booking.schedule_start).toLocaleTimeString('id-ID', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {formatTimeWIB(booking.schedule_start)} WIB
                   </p>
                 </div>
 
@@ -114,7 +107,7 @@ export default async function BookingsPage() {
                   <span className="text-gray-600">Jenis Servis:</span>
                   {booking.booking_services && booking.booking_services.length > 0 ? (
                     <ul className="list-disc list-inside">
-                      {booking.booking_services.map((bs: any, idx: number) => (
+                      {booking.booking_services.map((bs: { service_type?: { name?: string } }, idx: number) => (
                         <li key={idx} className="text-sm">
                           {bs.service_type?.name}
                         </li>
@@ -128,10 +121,7 @@ export default async function BookingsPage() {
 
               {booking.schedule_end && (
                 <div className="mt-3 text-sm text-gray-600">
-                  Estimasi selesai: {new Date(booking.schedule_end).toLocaleTimeString('id-ID', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  Estimasi selesai: {formatTimeWIB(booking.schedule_end)} WIB
                 </div>
               )}
             </Link>
