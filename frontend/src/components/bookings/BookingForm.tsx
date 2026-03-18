@@ -47,7 +47,7 @@ export function BookingForm({ services }: BookingFormProps) {
 
           <div>
             <label htmlFor="scheduled_time" className="block text-sm font-medium text-gray-700 mb-2">
-              Jam <span className="text-red-500">*</span>
+              Jam (WIB) <span className="text-red-500">*</span>
             </label>
             <input
               type="time"
@@ -56,6 +56,7 @@ export function BookingForm({ services }: BookingFormProps) {
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <p className="text-xs text-gray-500 mt-1">Waktu Indonesia Barat (WIB)</p>
           </div>
         </div>
       </div>
