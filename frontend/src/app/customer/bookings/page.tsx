@@ -2,6 +2,7 @@ import { requireRole } from '@/lib/auth/utils';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
+import RealtimeBookingList from '@/components/bookings/RealtimeBookingList';
 
 export default async function BookingsPage() {
   await requireRole(['customer']);
@@ -52,6 +53,7 @@ export default async function BookingsPage() {
 
   return (
     <div>
+      <RealtimeBookingList />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Booking Saya</h1>
         <Link

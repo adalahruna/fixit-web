@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { AssignMechanicForm } from '@/components/assignments/AssignMechanicForm';
 import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
+import RealtimeBookingStatus from '@/components/bookings/RealtimeBookingStatus';
 
 export default async function AdminBookingDetailPage({
   params,
@@ -64,30 +65,6 @@ export default async function AdminBookingDetailPage({
     .eq('is_active', true)
     .order('name');
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-blue-100 text-blue-800',
-      queued: 'bg-purple-100 text-purple-800',
-      in_progress: 'bg-green-100 text-green-800',
-      done: 'bg-gray-100 text-gray-800',
-      cancelled: 'bg-red-100 text-red-800',
-    };
-    return styles[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      pending: 'Menunggu Konfirmasi',
-      confirmed: 'Dikonfirmasi',
-      queued: 'Dalam Antrian',
-      in_progress: 'Sedang Dikerjakan',
-      done: 'Selesai',
-      cancelled: 'Dibatalkan',
-    };
-    return labels[status] || status;
-  };
-
   const isAssigned = booking.assignments && (Array.isArray(booking.assignments) ? booking.assignments.length > 0 : !!booking.assignments);
   const assignment = Array.isArray(booking.assignments) ? booking.assignments[0] : booking.assignments;
 
@@ -113,9 +90,10 @@ export default async function AdminBookingDetailPage({
                   <h1 className="text-2xl font-bold mb-1">Detail Booking</h1>
                   <p className="text-blue-100">ID: {booking.id.slice(0, 8)}</p>
                 </div>
-                <span className={`px-4 py-2 text-sm font-medium rounded-full ${getStatusBadge(booking.status)} text-gray-800`}>
-                  {getStatusLabel(booking.status)}
-                </span>
+                <RealtimeBookingStatus
+                  bookingId={booking.id}
+                  initialStatus={booking.status}
+                />
               </div>
             </div>
 

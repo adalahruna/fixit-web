@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { formatDateWIB, formatTimeWIB, formatDateTimeWIB } from '@/lib/utils/datetime';
+import { StartServiceButton, CompleteServiceButton } from '@/components/progress/ServiceActionButtons';
 
 export default async function MechanicBookingDetailPage({
   params,
@@ -251,33 +252,11 @@ export default async function MechanicBookingDetailPage({
           {progress && (
             <div className="border-t pt-6">
               {progress.status === 'queued' && (
-                <form action={async () => {
-                  'use server';
-                  const { startService } = await import('@/lib/progress/actions');
-                  await startService(id);
-                }}>
-                  <button
-                    type="submit"
-                    className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium"
-                  >
-                    🚀 Mulai Servis
-                  </button>
-                </form>
+                <StartServiceButton bookingId={id} />
               )}
 
               {progress.status === 'in_progress' && (
-                <form action={async () => {
-                  'use server';
-                  const { completeService } = await import('@/lib/progress/actions');
-                  await completeService(id);
-                }}>
-                  <button
-                    type="submit"
-                    className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
-                  >
-                    ✅ Selesai
-                  </button>
-                </form>
+                <CompleteServiceButton bookingId={id} />
               )}
 
               {progress.status === 'done' && (

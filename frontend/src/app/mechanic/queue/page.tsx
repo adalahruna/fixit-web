@@ -1,6 +1,7 @@
 import { requireRole } from '@/lib/auth/utils';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import RealtimeBookingList from '@/components/bookings/RealtimeBookingList';
 
 export default async function MechanicQueuePage() {
   await requireRole(['mechanic']);
@@ -88,6 +89,7 @@ export default async function MechanicQueuePage() {
 
   return (
     <div>
+      <RealtimeBookingList />
       <h1 className="text-3xl font-bold mb-6">Antrian Saya</h1>
 
       {!assignments || assignments.length === 0 ? (

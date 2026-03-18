@@ -2,6 +2,7 @@ import { requireRole } from '@/lib/auth/utils';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
+import RealtimeBookingList from '@/components/bookings/RealtimeBookingList';
 
 export default async function AdminBookingsPage() {
   await requireRole(['admin', 'owner']);
@@ -59,6 +60,7 @@ export default async function AdminBookingsPage() {
 
   return (
     <div>
+      <RealtimeBookingList />
       <h1 className="text-3xl font-bold mb-6">Kelola Booking</h1>
 
       {!bookings || bookings.length === 0 ? (
