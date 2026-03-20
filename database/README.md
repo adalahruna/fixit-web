@@ -72,6 +72,29 @@ supabase gen types typescript --linked > frontend/src/types/database.types.ts
 - `payments` - Data pembayaran (optional)
 - `audit_logs` - Log semua aktivitas penting
 
+## Migrations
+
+Jalankan migrations di Supabase SQL Editor secara berurutan:
+1. `001_initial_schema.sql` - Setup semua tabel
+2. `002_rls_policies.sql` - Setup Row Level Security
+3. `003_fix_users_rls.sql` - Fix users RLS policies
+4. `004_fix_service_progress_rls.sql` - **PENTING: Fix service_progress RLS untuk customer**
+
+## Troubleshooting
+
+### Customer tidak bisa lihat progress servis
+Jika customer tidak bisa melihat "Progres Servis" di halaman detail booking:
+
+1. **Jalankan migration 004:**
+   - Buka Supabase SQL Editor
+   - Copy-paste isi `migrations/004_fix_service_progress_rls.sql`
+   - Klik Run
+
+2. **Backfill data untuk booking lama:**
+   - Copy-paste isi `scripts/backfill-service-progress.sql`
+   - Klik Run
+   - Ini akan membuat service_progress untuk booking yang sudah di-assign tapi belum punya progress
+
 ## Notes
 
 - Semua tabel sudah enable RLS (Row Level Security)
