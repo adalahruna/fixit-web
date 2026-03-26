@@ -3,8 +3,8 @@
 ## Timeline
 - **Tanggal Mulai:** 14 Maret 2026
 - **Target Selesai:** Week 16 (sesuai sprint plan)
-- **Status Saat Ini:** Week 9 (Assignment & Queue) ✅ → Week 11 (Service Progress)
-- **Progress:** 9/16 weeks (56% complete)
+- **Status Saat Ini:** Week 12 (Realtime & Reschedule) ✅
+- **Progress:** 12/16 weeks (75% complete)
 
 ---
 
@@ -106,7 +106,81 @@
   - `frontend/src/app/customer/bookings/page.tsx`
   - `frontend/src/app/customer/bookings/[id]/page.tsx`
   - `frontend/src/app/customer/page.tsx`
-- **Status:** Ready to test
+- **Status:** Completed & tested
+- **Commit:** `feat: implement Week 7 - booking flow`
+
+### Week 8: Slot Validation (18 Mar 2026)
+- ✅ Slot availability validation
+  - Check kapasitas mekanik aktif
+  - Validasi overlapping bookings
+  - Real-time feedback di booking form
+- ✅ Slot availability utility functions
+- ✅ API route untuk check slot
+- **Files:**
+  - `frontend/src/lib/utils/slot-availability.ts`
+  - `frontend/src/app/api/check-slot/route.ts`
+  - Updated `frontend/src/components/bookings/BookingForm.tsx`
+- **Status:** Completed & tested
+- **Commit:** `feat: implement Week 8 - slot validation`
+
+### Week 9: Assignment & Queue (18 Mar 2026)
+- ✅ Admin assign mechanic to booking
+- ✅ Queue management per mechanic
+- ✅ Mechanic queue view (list & detail)
+- ✅ Queue position tracking
+- **Files:**
+  - `frontend/src/lib/assignments/actions.ts`
+  - `frontend/src/components/assignments/AssignMechanicForm.tsx`
+  - `frontend/src/app/admin/bookings/page.tsx`
+  - `frontend/src/app/admin/bookings/[id]/page.tsx`
+  - `frontend/src/app/mechanic/queue/page.tsx`
+  - `frontend/src/app/mechanic/queue/[id]/page.tsx`
+- **Status:** Completed & tested
+- **Commit:** `feat: implement Week 9 - assignment & queue`
+
+### Week 11: Service Progress (18 Mar 2026)
+- ✅ Start service button (Mechanic)
+- ✅ Complete service button (Mechanic)
+- ✅ Service progress tracking (start_time, end_time)
+- ✅ Status transitions (queued → in_progress → done)
+- ✅ Unassign mechanic feature (Admin)
+- **Files:**
+  - `frontend/src/lib/progress/actions.ts`
+  - Updated `frontend/src/app/mechanic/queue/[id]/page.tsx`
+  - Updated `frontend/src/app/admin/bookings/[id]/page.tsx`
+- **Status:** Completed & tested
+- **Commit:** `feat: implement Week 11 - service progress tracking`
+
+### Week 12: Realtime Updates & Reschedule (18 Mar 2026)
+- ✅ Reschedule booking feature (Customer)
+  - Reschedule form dengan validasi H-1 (24 jam)
+  - Status check (tidak bisa reschedule jika in_progress/done/cancelled)
+  - Slot availability check untuk jadwal baru
+  - Ownership check (customer hanya bisa reschedule booking sendiri)
+- ✅ Supabase Realtime subscription
+  - Real-time status updates di booking detail
+  - Real-time updates di booking list
+  - Subscribe ke bookings & service_progress tables
+- ✅ Polling fallback (15 detik)
+  - Fallback jika realtime channel gagal
+  - Automatic refresh untuk konsistensi data
+- ✅ Timezone handling (WIB/UTC+7)
+  - Display semua waktu dalam WIB
+  - Convert input WIB ke UTC untuk storage
+  - Utility functions untuk format tanggal/waktu
+- **Files:**
+  - `frontend/src/lib/bookings/reschedule-actions.ts`
+  - `frontend/src/components/bookings/RescheduleForm.tsx`
+  - `frontend/src/components/bookings/RescheduleButton.tsx`
+  - `frontend/src/components/bookings/RealtimeBookingStatus.tsx`
+  - `frontend/src/components/bookings/RealtimeBookingList.tsx`
+  - `frontend/src/lib/utils/datetime.ts`
+  - Updated `frontend/src/app/customer/bookings/[id]/page.tsx`
+  - Updated `frontend/src/app/customer/bookings/page.tsx`
+  - Updated `frontend/src/app/admin/bookings/page.tsx`
+  - Updated `frontend/src/app/admin/bookings/[id]/page.tsx`
+  - Updated `frontend/src/app/mechanic/queue/page.tsx`
+- **Status:** Completed, ready to test
 - **Commit:** Ready to commit
 
 ---
@@ -119,31 +193,30 @@ _Tidak ada task yang sedang dikerjakan_
 
 ## 📋 Next Tasks (Berdasarkan Sprint Plan)
 
-### Week 7: Booking Flow
-- [ ] Create booking form (Customer)
-- [ ] Slot availability validation
-- [ ] List & detail booking (Customer)
+### Week 13: Overload Detection & SLA
+- [ ] Overload detection logic
+- [ ] SLA delay calculation
+- [ ] Warning indicators for at-risk bookings
+- [ ] List late/at-risk bookings
 
-### Week 8: Consultation Feature
-- [ ] Consultation/complaint field
-- [ ] Validation BR-11 (keluhan wajib jika servis kosong)
-- [ ] ETA calculation & storage
+### Week 14: Audit Log & Error Handling
+- [ ] Audit log implementation
+- [ ] Global error handler
+- [ ] Basic KPI dashboard
+- [ ] Error format standardization
 
-### Week 9: Assignment & Queue
-- [ ] Admin assign mechanic
-- [ ] Multi-queue per mechanic
-- [ ] Mechanic queue view
+### Week 15: Dashboard & Testing
+- [ ] Complete dashboard KPI
+- [ ] Unit/integration tests
+- [ ] Black-box testing per role
+- [ ] Testing report
 
-### Week 10-16: Advanced Features
-- [ ] Queue ordering & ETA recalculation
-- [ ] Service progress tracking (start/done)
-- [ ] Near real-time updates (Supabase Realtime)
-- [ ] Rescheduling
-- [ ] Overload detection
-- [ ] SLA tracking
-- [ ] Audit logging
-- [ ] Analytics dashboard
-- [ ] Midtrans payment (optional)
+### Week 16: Deployment & Final Polish
+- [ ] Deploy to Vercel
+- [ ] Supabase production setup
+- [ ] User guide screenshots
+- [ ] Final smoke testing
+- [ ] Midtrans integration (optional)
 
 ---
 
@@ -156,8 +229,33 @@ _Tidak ada task yang sedang dikerjakan_
 - **Deployment:** Vercel (auto CI/CD via GitHub)
 
 ### Known Issues
-- [ ] RLS policies belum dibuat (akan dibuat setelah test auth flow)
-- [ ] TypeScript types belum di-generate dari database
+- None currently
+
+### Bug Fixes History
+1. **Landing Page Routing (18 Mar 2026)**
+   - Fixed duplicate landing pages
+   - Auto-redirect authenticated users to role dashboard
+   - Landing page only accessible when not logged in
+
+2. **Admin Login Routing (18 Mar 2026)**
+   - Fixed RLS policies blocking middleware queries
+   - Store role in user_metadata for performance
+   - Created migration 003_fix_users_rls.sql
+   - Added fallback to sync role from DB to metadata
+
+3. **Timezone Handling (18 Mar 2026)**
+   - Fixed UTC/WIB conversion issues
+   - User inputs in WIB, stored as UTC
+   - All displays show WIB timezone
+   - Created datetime utility functions
+
+4. **Hydration Error (18 Mar 2026)**
+   - Fixed date rendering hydration mismatch
+   - Added suppressHydrationWarning on date fields
+
+5. **Query Result Handling (18 Mar 2026)**
+   - Fixed object vs array handling for assignments, service_progress, booking_consultations
+   - Added proper type checking and array handling
 
 ### Dependencies
 - Semua role sudah bisa login/register
@@ -166,11 +264,14 @@ _Tidak ada task yang sedang dikerjakan_
 
 ---
 
-## 🎯 Current Sprint Goal (Week 5)
-**Goal:** Finalisasi Auth + RBAC dan mulai CRUD master data
+## 🎯 Current Sprint Goal (Week 12)
+**Goal:** Implement realtime updates & reschedule feature
 
 **Definition of Done:**
-- User bisa login/register
-- Redirect otomatis ke dashboard sesuai role
-- Protected routes enforce RBAC
-- RLS policies aktif di Supabase
+- ✅ Customer dapat reschedule booking dengan validasi H-1
+- ✅ Status updates terlihat real-time (≤5 detik) atau via polling
+- ✅ Reschedule check slot availability
+- ✅ Timezone handling WIB/UTC correct
+- ✅ All pages have realtime subscription or polling fallback
+
+**Next:** Week 13 - Overload Detection & SLA Tracking

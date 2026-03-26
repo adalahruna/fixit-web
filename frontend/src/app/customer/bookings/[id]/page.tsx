@@ -48,11 +48,35 @@ export default async function BookingDetailPage({
     `)
     .eq('id', id)
     .eq('customer_id', user?.id)
-    .single();
+    .maybeSingle();
 
   if (!booking) {
     notFound();
   }
+
+  // Debug: Log service_progress data
+  console.log('=== DEBUG: Customer Booking Detail ===');
+  console.log('Booking ID:', booking.id);
+  console.log('Booking Status:', booking.status);
+  console.log('Assignments:', JSON.stringify(booking.assignments, null, 2));
+  console.log('Service Progress:', JSON.stringify(booking.service_progress, null, 2));
+  console.log('Is Array?', Array.isArray(booking.service_progress));
+  console.log('Length:', booking.service_progress?.length);
+  console.log('Has Assignment?', booking.assignments?.length > 0);
+
+  // Normalize service_progress to handle both array and object
+  const serviceProgress = Array.isArray(booking.service_progress) 
+    ? (booking.service_progress.length > 0 ? booking.service_progress[0] : null)
+    : booking.service_progress;
+
+  // Normalize assignments to handle both array and object
+  const assignment = Array.isArray(booking.assignments)
+    ? (booking.assignments.length > 0 ? booking.assignments[0] : null)
+    : booking.assignments;
+
+  console.log('ServiceProgress normalized:', serviceProgress);
+  console.log('Assignment normalized:', assignment);
+  console.log('=====================================');
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -167,30 +191,56 @@ export default async function BookingDetailPage({
           )}
 
           {/* Mekanik */}
-          {booking.assignments && booking.assignments.length > 0 && booking.assignments[0].mechanic && (
+          {assignment && assignment.mechanic && (
             <div>
               <h2 className="text-lg font-semibold mb-3 text-gray-900">Mekanik</h2>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-gray-700">
-                  <span className="font-medium">Nama:</span> {booking.assignments[0].mechanic.name}
+                  <span className="font-medium">Nama:</span> {assignment.mechanic.name}
                 </p>
               </div>
             </div>
           )}
 
-          {/* Progress Info */}
-          {booking.service_progress && booking.service_progress.length > 0 && booking.service_progress[0].start_time && (
+          {/* Progress Info - Show if booking has assignment */}
+          {assignment && (
             <div>
               <h2 className="text-lg font-semibold mb-3 text-gray-900">Progres Servis</h2>
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                <p className="text-gray-700">
-                  <span className="font-medium">Mulai:</span>{' '}
-                  {new Date(booking.service_progress[0].start_time).toLocaleString('id-ID')}
-                </p>
-                {booking.service_progress[0].end_time && (
-                  <p className="text-gray-700">
-                    <span className="font-medium">Selesai:</span>{' '}
-                    {new Date(booking.service_progress[0].end_time).toLocaleString('id-ID')}
+                {serviceProgress ? (
+                  <>
+                    {serviceProgress.status && (
+                      <p className="text-gray-700">
+                        <span className="font-medium">Status:</span>{' '}
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          serviceProgress.status === 'queued' ? 'bg-purple-100 text-purple-800' :
+                          serviceProgress.status === 'in_progress' ? 'bg-green-100 text-green-800' :
+                          serviceProgress.status === 'done' ? 'bg-gray-100 text-gray-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {serviceProgress.status === 'queued' ? 'Dalam Antrian' :
+                           serviceProgress.status === 'in_progress' ? 'Sedang Dikerjakan' :
+                           serviceProgress.status === 'done' ? 'Selesai' :
+                           serviceProgress.status}
+                        </span>
+                      </p>
+                    )}
+                    {serviceProgress.start_time && (
+                      <p className="text-gray-700">
+                        <span className="font-medium">Mulai:</span>{' '}
+                        {new Date(serviceProgress.start_time).toLocaleString('id-ID')}
+                      </p>
+                    )}
+                    {serviceProgress.end_time && (
+                      <p className="text-gray-700">
+                        <span className="font-medium">Selesai:</span>{' '}
+                        {new Date(serviceProgress.end_time).toLocaleString('id-ID')}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-gray-500 italic">
+                    Booking sudah di-assign ke mekanik. Menunggu mekanik memulai servis...
                   </p>
                 )}
               </div>

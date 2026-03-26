@@ -96,7 +96,7 @@ export default function RealtimeBookingStatus({
 
   return (
     <div>
-      <span className={`px-4 py-2 text-sm font-medium rounded-full ${getStatusBadge(status)} text-gray-800`}>
+      <span className={`px-4 py-2 text-sm font-medium rounded-full ${getStatusBadge(status)}`}>
         {getStatusLabel(status)}
       </span>
       {lastUpdate && (
