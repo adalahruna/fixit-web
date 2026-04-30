@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import RescheduleButton from '@/components/bookings/RescheduleButton';
+import CancelButton from '@/components/bookings/CancelButton';
 import RealtimeBookingStatus from '@/components/bookings/RealtimeBookingStatus';
 
 export default async function BookingDetailPage({
@@ -247,12 +248,19 @@ export default async function BookingDetailPage({
             </div>
           )}
 
-          {/* Reschedule Button */}
-          <RescheduleButton
-            bookingId={booking.id}
-            currentSchedule={booking.schedule_start}
-            status={booking.status}
-          />
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <RescheduleButton
+              bookingId={booking.id}
+              currentSchedule={booking.schedule_start}
+              status={booking.status}
+            />
+            <CancelButton
+              bookingId={booking.id}
+              currentSchedule={booking.schedule_start}
+              status={booking.status}
+            />
+          </div>
         </div>
       </div>
     </div>
