@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { AssignMechanicForm } from '@/components/assignments/AssignMechanicForm';
 import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
 import RealtimeBookingStatus from '@/components/bookings/RealtimeBookingStatus';
+import SLAWarning from '@/components/warnings/SLAWarning';
+import OverloadWarning from '@/components/warnings/OverloadWarning';
+import { getBookingSLAStatus } from '@/lib/utils/sla-calculation';
 
 export default async function AdminBookingDetailPage({
   params,
@@ -68,6 +71,9 @@ export default async function AdminBookingDetailPage({
   const isAssigned = booking.assignments && (Array.isArray(booking.assignments) ? booking.assignments.length > 0 : !!booking.assignments);
   const assignment = Array.isArray(booking.assignments) ? booking.assignments[0] : booking.assignments;
 
+  // Get SLA status for this booking
+  const slaStatus = await getBookingSLAStatus(id);
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-6">
@@ -78,6 +84,23 @@ export default async function AdminBookingDetailPage({
           ← Kembali ke Daftar Booking
         </Link>
       </div>
+
+      {/* SLA Warning */}
+      {slaStatus && (slaStatus.isLate || slaStatus.isAtRisk) && (
+        <SLAWarning
+          bookingId={slaStatus.bookingId}
+          isLate={slaStatus.isLate}
+          isAtRisk={slaStatus.isAtRisk}
+          delayMinutes={slaStatus.delayMinutes}
+          estimatedEnd={slaStatus.estimatedEnd}
+          className="mb-6"
+        />
+      )}
+
+      {/* Mechanic Overload Warning */}
+      {assignment?.mechanic?.id && (
+        <OverloadWarning mechanicId={assignment.mechanic.id} />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}

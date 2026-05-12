@@ -3,8 +3,8 @@
 ## Timeline
 - **Tanggal Mulai:** 14 Maret 2026
 - **Target Selesai:** Week 16 (sesuai sprint plan)
-- **Status Saat Ini:** Week 12 (Realtime & Reschedule) ✅
-- **Progress:** 12/16 weeks (75% complete)
+- **Status Saat Ini:** Week 13 (Overload Detection & SLA) ✅
+- **Progress:** 13/16 weeks (81% complete)
 
 ---
 
@@ -183,6 +183,41 @@
 - **Status:** Completed, ready to test
 - **Commit:** Ready to commit
 
+### Week 13: Overload Detection & SLA (18 Mar 2026)
+- ✅ Overload detection logic
+  - Deteksi overload mekanik berdasarkan kapasitas harian (threshold 80%)
+  - Sistem overload percentage calculation
+  - Real-time monitoring kapasitas vs beban aktual
+- ✅ SLA delay calculation
+  - Kalkulasi delay berdasarkan estimasi vs aktual completion
+  - SLA tolerance 30 menit (configurable)
+  - At-risk detection untuk booking yang berpotensi terlambat
+- ✅ Warning indicators
+  - OverloadWarning component untuk individual & system-wide alerts
+  - SLAWarning component untuk booking terlambat/berisiko
+  - Visual indicators dengan color coding (yellow/red)
+- ✅ SLA & Overload monitoring page
+  - Dashboard monitoring untuk admin/owner
+  - List overloaded mechanics dengan detail kapasitas
+  - List at-risk dan late bookings
+  - Summary cards dengan key metrics
+- ✅ Integration ke existing pages
+  - SLA warnings di admin booking detail
+  - Overload warnings untuk assigned mechanics
+  - API routes untuk real-time overload data
+- **Files:**
+  - `frontend/src/lib/utils/overload-detection.ts`
+  - `frontend/src/lib/utils/sla-calculation.ts`
+  - `frontend/src/components/warnings/OverloadWarning.tsx`
+  - `frontend/src/components/warnings/SLAWarning.tsx`
+  - `frontend/src/app/api/overload/system/route.ts`
+  - `frontend/src/app/api/overload/mechanic/[id]/route.ts`
+  - `frontend/src/app/admin/sla/page.tsx`
+  - Updated `frontend/src/app/admin/layout.tsx`
+  - Updated `frontend/src/app/admin/bookings/[id]/page.tsx`
+- **Status:** Completed & ready to test
+- **Commit:** Ready to commit
+
 ---
 
 ## 🚧 In Progress
@@ -194,10 +229,10 @@ _Tidak ada task yang sedang dikerjakan_
 ## 📋 Next Tasks (Berdasarkan Sprint Plan)
 
 ### Week 13: Overload Detection & SLA
-- [ ] Overload detection logic
-- [ ] SLA delay calculation
-- [ ] Warning indicators for at-risk bookings
-- [ ] List late/at-risk bookings
+- ✅ Overload detection logic
+- ✅ SLA delay calculation
+- ✅ Warning indicators for at-risk bookings
+- ✅ List late/at-risk bookings
 
 ### Week 14: Audit Log & Error Handling
 - [ ] Audit log implementation
@@ -274,4 +309,4 @@ _Tidak ada task yang sedang dikerjakan_
 - ✅ Timezone handling WIB/UTC correct
 - ✅ All pages have realtime subscription or polling fallback
 
-**Next:** Week 13 - Overload Detection & SLA Tracking
+**Next:** Week 14 - Audit Log & Error Handling

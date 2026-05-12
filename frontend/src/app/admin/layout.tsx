@@ -29,6 +29,9 @@ export default async function AdminLayout({
                 <Link href="/admin/mechanics" className="text-gray-700 hover:text-blue-600">
                   Mekanik
                 </Link>
+                <Link href="/admin/sla" className="text-gray-700 hover:text-blue-600">
+                  SLA & Overload
+                </Link>
               </div>
             </div>
             <div className="flex items-center space-x-4">
