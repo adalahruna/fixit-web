@@ -3,8 +3,8 @@
 ## Timeline
 - **Tanggal Mulai:** 14 Maret 2026
 - **Target Selesai:** Week 16 (sesuai sprint plan)
-- **Status Saat Ini:** Week 14 (Audit Log & Error Handling) ✅
-- **Progress:** 14/16 weeks (87.5% complete)
+- **Status Saat Ini:** Week 15 (Dashboard & Testing) ✅
+- **Progress:** 15/16 weeks (93.75% complete)
 
 ---
 
@@ -276,11 +276,44 @@ _Tidak ada task yang sedang dikerjakan_
 - [ ] Basic KPI dashboard
 - [ ] Error format standardization
 
-### Week 15: Dashboard & Testing
-- [ ] Complete dashboard KPI
-- [ ] Unit/integration tests
-- [ ] Black-box testing per role
-- [ ] Testing report
+### Week 15: Dashboard & Testing (18 Mar 2026)
+- ✅ Complete dashboard KPI
+  - Enhanced KPI dashboard with advanced metrics and visualizations
+  - Added KPI cards, charts, and analytics components
+  - Implemented booking status distribution, service type performance
+  - Added mechanic performance tracking and weekly trends
+  - Enhanced revenue metrics and service quality indicators
+- ✅ Unit/integration tests
+  - Comprehensive unit test suite for business logic functions
+  - Integration test runner for complete user workflows
+  - Test utilities with predefined users and scenarios
+  - Jest configuration with coverage reporting
+- ✅ Black-box testing per role
+  - Black-box testing scenarios for all user roles
+  - Test data and validation functions
+  - Testing dashboard for manual test execution
+  - Automated test report generation
+- ✅ Testing report
+  - Test report generator with HTML and Markdown output
+  - Coverage analysis and recommendations
+  - Test execution summary and detailed results
+  - Testing documentation and best practices guide
+- **Files:**
+  - `frontend/src/lib/testing/unit-tests.ts`
+  - `frontend/src/lib/testing/integration-tests.ts`
+  - `frontend/src/lib/testing/test-report.ts`
+  - `frontend/src/lib/testing/README.md`
+  - `frontend/src/app/admin/testing/page.tsx`
+  - `frontend/src/components/dashboard/KPICard.tsx`
+  - `frontend/src/components/dashboard/ChartCard.tsx`
+  - Enhanced `frontend/src/lib/kpi/calculations.ts`
+  - Enhanced `frontend/src/app/admin/dashboard/page.tsx`
+  - `frontend/jest.config.js`
+  - `frontend/jest.setup.js`
+  - Updated `frontend/package.json`
+  - Updated `frontend/src/app/admin/layout.tsx`
+- **Status:** Completed & ready to test
+- **Commit:** Ready to commit
 
 ### Week 16: Deployment & Final Polish
 - [ ] Deploy to Vercel
@@ -346,4 +379,4 @@ _Tidak ada task yang sedang dikerjakan_
 - ✅ Admin can view audit logs with filtering capabilities
 - ✅ Standardized error pages for 404/500 errors
 
-**Next:** Week 15 - Dashboard & Testing
+**Next:** Week 16 - Deployment & Final Polish

@@ -1,5 +1,8 @@
 import { requireRole } from '@/lib/auth/utils';
 import { calculateKPIMetrics } from '@/lib/kpi/calculations';
+import KPICard from '@/components/dashboard/KPICard';
+import ChartCard, { SimpleBarChart, DonutChart } from '@/components/dashboard/ChartCard';
+import QuickNavigation, { adminNavigationItems } from '@/components/dashboard/QuickNavigation';
 
 interface SearchParams {
   startDate?: string;
@@ -38,6 +41,12 @@ export default async function KPIDashboardPage({
         <h1 className="text-3xl font-bold">KPI Dashboard</h1>
       </div>
 
+      {/* Quick Navigation */}
+      <QuickNavigation 
+        items={adminNavigationItems}
+        title="Menu Utama"
+      />
+
       {/* Date Range Filter */}
       <div className="bg-white p-4 rounded-lg shadow">
         <form method="GET" className="flex gap-4 items-end">
@@ -74,85 +83,106 @@ export default async function KPIDashboardPage({
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Bookings */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600">Total Bookings</p>
-              <p className="text-2xl font-bold text-gray-900">{kpiData.totalBookings}</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-          </div>
-          <div className="mt-2 text-sm text-gray-500">
-            Completed: {kpiData.completedBookings} | Cancelled: {kpiData.cancelledBookings}
-          </div>
-        </div>
+        <KPICard
+          title="Total Bookings"
+          value={kpiData.totalBookings}
+          subtitle={`Completed: ${kpiData.completedBookings} | Cancelled: ${kpiData.cancelledBookings}`}
+          icon={
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          }
+          color="blue"
+        />
 
-        {/* On-Time Rate */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600">On-Time Rate</p>
-              <p className={`text-2xl font-bold ${getStatusColor(kpiData.onTimeCompletionRate, { good: 90, warning: 75 })}`}>
-                {kpiData.onTimeCompletionRate}%
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-          <div className="mt-2 text-sm text-gray-500">
-            Target: ≥90% (Good), ≥75% (Warning)
-          </div>
-        </div>
+        <KPICard
+          title="On-Time Rate"
+          value={`${kpiData.onTimeCompletionRate}%`}
+          subtitle="Target: ≥90% (Good), ≥75% (Warning)"
+          icon={
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+          color={kpiData.onTimeCompletionRate >= 90 ? "green" : kpiData.onTimeCompletionRate >= 75 ? "orange" : "red"}
+        />
 
-        {/* Average Service Time */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600">Avg Service Time</p>
-              <p className="text-2xl font-bold text-gray-900">{kpiData.averageServiceTime} min</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-          </div>
-          <div className="mt-2 text-sm text-gray-500">
-            Based on {kpiData.completedBookings} completed services
-          </div>
-        </div>
+        <KPICard
+          title="Avg Service Time"
+          value={`${kpiData.averageServiceTime} min`}
+          subtitle={`Based on ${kpiData.completedBookings} completed services`}
+          icon={
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          }
+          color="purple"
+        />
 
-        {/* Mechanic Utilization */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-600">Mechanic Utilization</p>
-              <p className={`text-2xl font-bold ${getStatusColor(kpiData.mechanicUtilization, { good: 70, warning: 50 })}`}>
-                {kpiData.mechanicUtilization}%
-              </p>
-            </div>
-            <div className="p-3 bg-orange-100 rounded-full">
-              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-          </div>
-          <div className="mt-2 text-sm text-gray-500">
-            Target: ≥70% (Good), ≥50% (Warning)
-          </div>
-        </div>
+        <KPICard
+          title="Mechanic Utilization"
+          value={`${kpiData.mechanicUtilization}%`}
+          subtitle="Target: ≥70% (Good), ≥50% (Warning)"
+          icon={
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          }
+          color={kpiData.mechanicUtilization >= 70 ? "green" : kpiData.mechanicUtilization >= 50 ? "orange" : "red"}
+        />
       </div>
 
-      {/* Revenue Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Charts and Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Booking Status Distribution */}
+        <ChartCard title="Booking Status Distribution">
+          <DonutChart 
+            data={kpiData.bookingsByStatus.map(item => ({
+              label: item.status,
+              value: item.count,
+              color: item.color
+            }))}
+            centerText={`${kpiData.totalBookings}`}
+          />
+        </ChartCard>
+
+        {/* Service Type Performance */}
+        <ChartCard title="Service Type Performance">
+          <SimpleBarChart 
+            data={kpiData.serviceTypeDistribution.map(service => ({
+              label: service.name,
+              value: service.count,
+              color: 'bg-blue-500'
+            }))}
+          />
+        </ChartCard>
+
+        {/* Mechanic Performance */}
+        <ChartCard title="Mechanic Performance">
+          <SimpleBarChart 
+            data={kpiData.mechanicPerformance.map(mechanic => ({
+              label: mechanic.name,
+              value: mechanic.completedJobs,
+              color: 'bg-green-500'
+            }))}
+          />
+        </ChartCard>
+
+        {/* Weekly Trend */}
+        <ChartCard title="Weekly Booking Trend">
+          <SimpleBarChart 
+            data={kpiData.weeklyTrend.map(week => ({
+              label: week.week,
+              value: week.bookings,
+              color: 'bg-purple-500'
+            }))}
+          />
+        </ChartCard>
+      </div>
+
+      {/* Additional Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Revenue Overview */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Revenue Overview</h3>
           <div className="space-y-4">
@@ -165,7 +195,7 @@ export default async function KPIDashboardPage({
               <span className="font-semibold">{formatCurrency(kpiData.averageBookingValue)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Revenue per Completed Booking:</span>
+              <span className="text-gray-600">Revenue per Completed:</span>
               <span className="font-semibold">
                 {kpiData.completedBookings > 0 
                   ? formatCurrency(kpiData.totalRevenue / kpiData.completedBookings)
@@ -176,6 +206,7 @@ export default async function KPIDashboardPage({
           </div>
         </div>
 
+        {/* Service Quality */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Service Quality</h3>
           <div className="space-y-4">
@@ -192,78 +223,36 @@ export default async function KPIDashboardPage({
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Cancellation Rate:</span>
-              <span className={`font-semibold ${
-                kpiData.totalBookings > 0 && (kpiData.cancelledBookings / kpiData.totalBookings) * 100 > 10
-                  ? 'text-red-600'
-                  : 'text-green-600'
-              }`}>
-                {kpiData.totalBookings > 0 
-                  ? Math.round((kpiData.cancelledBookings / kpiData.totalBookings) * 100)
-                  : 0
-                }%
-              </span>
+              <span className="text-gray-600">Reschedule Rate:</span>
+              <span className="font-semibold text-orange-600">{kpiData.rescheduleRate}%</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Customer Satisfaction:</span>
-              <span className="font-semibold text-blue-600">{kpiData.customerSatisfactionRate}%</span>
-              <span className="text-xs text-gray-400">(Placeholder)</span>
+              <span className="text-gray-600">Avg Wait Time:</span>
+              <span className="font-semibold">{kpiData.averageWaitTime} min</span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Daily Booking Trend */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Daily Booking Trend</h3>
-        <div className="overflow-x-auto">
-          <div className="flex space-x-2 min-w-full">
-            {kpiData.dailyBookingTrend.map((day, index) => {
-              const maxCount = Math.max(...kpiData.dailyBookingTrend.map(d => d.count));
-              const height = maxCount > 0 ? (day.count / maxCount) * 100 : 0;
-              
-              return (
-                <div key={index} className="flex flex-col items-center min-w-0 flex-1">
-                  <div className="w-full bg-gray-200 rounded-t" style={{ height: '100px' }}>
+        {/* Peak Hours */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h3 className="text-lg font-semibold mb-4">Peak Hours</h3>
+          <div className="space-y-3">
+            {kpiData.peakHours.map((peak, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span className="text-gray-600">
+                  {peak.hour}:00 - {peak.hour + 1}:00
+                </span>
+                <div className="flex items-center">
+                  <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
                     <div 
-                      className="w-full bg-blue-500 rounded-t flex items-end justify-center text-white text-xs font-semibold"
-                      style={{ height: `${height}%`, minHeight: day.count > 0 ? '20px' : '0' }}
-                    >
-                      {day.count > 0 && day.count}
-                    </div>
+                      className="bg-blue-500 h-2 rounded-full"
+                      style={{ width: `${(peak.load / Math.max(...kpiData.peakHours.map(p => p.load))) * 100}%` }}
+                    />
                   </div>
-                  <div className="text-xs text-gray-600 mt-1 transform -rotate-45 origin-top-left">
-                    {new Date(day.date).toLocaleDateString('id-ID', { 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}
-                  </div>
+                  <span className="font-semibold text-sm">{peak.load}</span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Status Breakdown */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Booking Status Breakdown</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{kpiData.completedBookings}</div>
-            <div className="text-sm text-gray-600">Completed</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{kpiData.pendingBookings}</div>
-            <div className="text-sm text-gray-600">In Progress</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">{kpiData.cancelledBookings}</div>
-            <div className="text-sm text-gray-600">Cancelled</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-600">{kpiData.totalBookings}</div>
-            <div className="text-sm text-gray-600">Total</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

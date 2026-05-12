@@ -2,6 +2,33 @@
 
 import { createClient } from '@/lib/supabase/server';
 
+// Type definitions for Supabase query results
+interface ServiceType {
+  price: number;
+  default_duration_minutes: number;
+  name: string;
+}
+
+interface BookingService {
+  service_type: ServiceType;
+}
+
+interface ServiceProgress {
+  start_time: string | null;
+  end_time: string | null;
+  actual_duration: number | null;
+}
+
+interface BookingData {
+  id: string;
+  status: string;
+  schedule_start: string;
+  schedule_end: string;
+  created_at: string;
+  booking_services: BookingService[] | null;
+  service_progress: ServiceProgress[] | ServiceProgress | null;
+}
+
 export interface KPIMetrics {
   // Booking metrics
   totalBookings: number;
@@ -21,6 +48,18 @@ export interface KPIMetrics {
   // Revenue metrics (placeholder)
   totalRevenue: number;
   averageBookingValue: number;
+
+  // Enhanced metrics
+  bookingsByStatus: Array<{ status: string; count: number; color: string }>;
+  serviceTypeDistribution: Array<{ name: string; count: number; revenue: number }>;
+  mechanicPerformance: Array<{ name: string; completedJobs: number; avgTime: number; onTimeRate: number }>;
+  hourlyBookingDistribution: Array<{ hour: number; count: number }>;
+  weeklyTrend: Array<{ week: string; bookings: number; revenue: number }>;
+  
+  // Quality metrics
+  rescheduleRate: number;
+  averageWaitTime: number; // minutes from booking to service start
+  peakHours: Array<{ hour: number; load: number }>;
 }
 
 export async function calculateKPIMetrics(
@@ -52,7 +91,7 @@ export async function calculateKPIMetrics(
       )
     `)
     .gte('created_at', start.toISOString())
-    .lte('created_at', end.toISOString());
+    .lte('created_at', end.toISOString()) as { data: BookingData[] | null };
 
   const totalBookings = bookings?.length || 0;
   const completedBookings = bookings?.filter(b => b.status === 'done').length || 0;
@@ -124,7 +163,7 @@ export async function calculateKPIMetrics(
   bookings?.forEach(booking => {
     if (booking.booking_services && Array.isArray(booking.booking_services)) {
       const bookingRevenue = booking.booking_services.reduce((sum, bs) => {
-        const serviceType = bs.service_type as any;
+        const serviceType = bs.service_type;
         return sum + (serviceType?.price || 0);
       }, 0);
       totalRevenue += bookingRevenue;
@@ -135,6 +174,97 @@ export async function calculateKPIMetrics(
   const averageBookingValue = totalBookings > 0 
     ? Math.round(totalBookingValue / totalBookings)
     : 0;
+
+  // Enhanced metrics calculations
+  
+  // Bookings by status for donut chart
+  const bookingsByStatus = [
+    { status: 'Completed', count: completedBookings, color: '#10b981' },
+    { status: 'In Progress', count: pendingBookings, color: '#3b82f6' },
+    { status: 'Cancelled', count: cancelledBookings, color: '#ef4444' }
+  ].filter(item => item.count > 0);
+
+  // Service type distribution
+  const serviceTypeMap = new Map<string, { count: number; revenue: number }>();
+  bookings?.forEach(booking => {
+    if (booking.booking_services && Array.isArray(booking.booking_services)) {
+      booking.booking_services.forEach(bs => {
+        const serviceType = bs.service_type;
+        if (serviceType) {
+          const existing = serviceTypeMap.get(serviceType.name) || { count: 0, revenue: 0 };
+          serviceTypeMap.set(serviceType.name, {
+            count: existing.count + 1,
+            revenue: existing.revenue + (serviceType.price || 0)
+          });
+        }
+      });
+    }
+  });
+
+  const serviceTypeDistribution = Array.from(serviceTypeMap.entries()).map(([name, data]) => ({
+    name,
+    count: data.count,
+    revenue: data.revenue
+  }));
+
+  // Mechanic performance (mock data for now)
+  const mechanicPerformance = [
+    { name: 'Ahmad', completedJobs: 15, avgTime: 45, onTimeRate: 95 },
+    { name: 'Budi', completedJobs: 12, avgTime: 52, onTimeRate: 88 },
+    { name: 'Candra', completedJobs: 18, avgTime: 38, onTimeRate: 92 }
+  ];
+
+  // Hourly booking distribution
+  const hourlyDistribution = new Map<number, number>();
+  bookings?.forEach(booking => {
+    const hour = new Date(booking.schedule_start).getHours();
+    hourlyDistribution.set(hour, (hourlyDistribution.get(hour) || 0) + 1);
+  });
+
+  const hourlyBookingDistribution = Array.from({ length: 24 }, (_, hour) => ({
+    hour,
+    count: hourlyDistribution.get(hour) || 0
+  })).filter(item => item.count > 0);
+
+  // Weekly trend (last 4 weeks)
+  const weeklyTrend = [];
+  for (let i = 3; i >= 0; i--) {
+    const weekStart = new Date(end);
+    weekStart.setDate(weekStart.getDate() - (i * 7));
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    const weekBookings = bookings?.filter(b => {
+      const bookingDate = new Date(b.created_at);
+      return bookingDate >= weekStart && bookingDate <= weekEnd;
+    }) || [];
+
+    const weekRevenue = weekBookings.reduce((sum, booking) => {
+      if (booking.booking_services && Array.isArray(booking.booking_services)) {
+        return sum + booking.booking_services.reduce((serviceSum, bs) => {
+          const serviceType = bs.service_type;
+          return serviceSum + (serviceType?.price || 0);
+        }, 0);
+      }
+      return sum;
+    }, 0);
+
+    weeklyTrend.push({
+      week: `Week ${4 - i}`,
+      bookings: weekBookings.length,
+      revenue: weekRevenue
+    });
+  }
+
+  // Quality metrics
+  const rescheduleRate = 5; // Placeholder - would need reschedule tracking
+  const averageWaitTime = 30; // Placeholder - would calculate from booking to service start
+
+  // Peak hours analysis
+  const peakHours = hourlyBookingDistribution
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3)
+    .map(item => ({ hour: item.hour, load: item.count }));
 
   return {
     totalBookings,
@@ -147,6 +277,14 @@ export async function calculateKPIMetrics(
     mechanicUtilization,
     dailyBookingTrend,
     totalRevenue,
-    averageBookingValue
+    averageBookingValue,
+    bookingsByStatus,
+    serviceTypeDistribution,
+    mechanicPerformance,
+    hourlyBookingDistribution,
+    weeklyTrend,
+    rescheduleRate,
+    averageWaitTime,
+    peakHours
   };
 }
