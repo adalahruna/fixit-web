@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { logAuditActivity } from '@/lib/audit/actions';
+import { AUDIT_ACTIONS, AUDIT_ENTITIES } from '@/lib/audit/constants';
 
 export async function cancelBooking(bookingId: string) {
   const supabase = await createClient();
@@ -58,7 +60,7 @@ export async function cancelBooking(bookingId: string) {
   }
 
   // Update service_progress status to cancelled (if exists)
-  const { error: progressError } = await supabase
+  await supabase
     .from('service_progress')
     .update({ 
       status: 'cancelled',
@@ -67,11 +69,23 @@ export async function cancelBooking(bookingId: string) {
     .eq('booking_id', bookingId);
 
   // Ignore error if service_progress doesn't exist (booking not assigned yet)
-  // progressError is expected if booking hasn't been assigned
 
   // Revalidate paths
   revalidatePath('/customer/bookings');
   revalidatePath(`/customer/bookings/${bookingId}`);
+
+  // Log audit activity
+  await logAuditActivity(
+    AUDIT_ACTIONS.CANCEL_BOOKING,
+    AUDIT_ENTITIES.BOOKING,
+    bookingId,
+    {
+      original_schedule: booking.schedule_start,
+      original_status: booking.status,
+      cancellation_time: new Date().toISOString(),
+      hours_before_schedule: Math.round(hoursDiff)
+    }
+  );
 
   return { success: true };
 }

@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { localToUTC } from '../utils/datetime';
 import { checkSlotAvailability } from '../utils/slot-availability';
+import { logAuditActivity } from '@/lib/audit/actions';
+import { AUDIT_ACTIONS, AUDIT_ENTITIES } from '@/lib/audit/constants';
 
 export async function createBooking(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
@@ -124,6 +126,21 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
       return { error: consultationError.message };
     }
   }
+
+  // Log audit activity
+  await logAuditActivity(
+    AUDIT_ACTIONS.CREATE_BOOKING,
+    AUDIT_ENTITIES.BOOKING,
+    booking.id,
+    {
+      scheduled_start: bookingData.schedule_start,
+      scheduled_end: bookingData.schedule_end,
+      vehicle_plate: vehiclePlate,
+      vehicle_type: vehicleType,
+      services_count: serviceIds.length,
+      has_consultation: !!consultationText
+    }
+  );
 
   revalidatePath('/customer/bookings');
   redirect('/customer/bookings');

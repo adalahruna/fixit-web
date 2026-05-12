@@ -32,6 +32,12 @@ export default async function AdminLayout({
                 <Link href="/admin/sla" className="text-gray-700 hover:text-blue-600">
                   SLA & Overload
                 </Link>
+                <Link href="/admin/dashboard" className="text-gray-700 hover:text-blue-600">
+                  KPI Dashboard
+                </Link>
+                <Link href="/admin/audit" className="text-gray-700 hover:text-blue-600">
+                  Audit Logs
+                </Link>
               </div>
             </div>
             <div className="flex items-center space-x-4">

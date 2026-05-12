@@ -45,3 +45,33 @@ Script akan create 3 users:
 - Service role key harus dijaga kerahasiaannya (jangan commit!)
 - Script ini pakai `admin.createUser()` untuk bypass email confirmation
 - User langsung aktif dan bisa login
+
+## Migration Scripts
+
+### Migration 005: Audit Logs (Required for Week 14 features)
+
+To enable audit logging functionality, you need to run the audit logs migration:
+
+1. **Option 1: Using Supabase Dashboard**
+   - Go to your Supabase project dashboard
+   - Navigate to SQL Editor
+   - Copy and paste the content from `run-migration-005.sql`
+   - Click "Run" to execute the migration
+
+2. **Option 2: Using Supabase CLI**
+   ```bash
+   supabase db reset  # If you want to reset and apply all migrations
+   ```
+
+### What the migration adds:
+- `audit_logs` table for tracking user activities
+- Proper indexes for performance
+- RLS policies for security
+- Support for audit logging in the application
+
+**Note:** This migration is required for the audit logging and KPI dashboard features to work properly.
+
+## Backfill Scripts
+
+### backfill-service-progress.sql
+Backfills service progress data for existing bookings.
