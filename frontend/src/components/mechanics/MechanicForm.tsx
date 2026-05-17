@@ -1,8 +1,9 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { createMechanic, updateMechanic } from '@/lib/mechanics/actions';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface MechanicFormProps {
   mechanic?: {
@@ -17,12 +18,35 @@ interface MechanicFormProps {
 export function MechanicForm({ mechanic }: MechanicFormProps) {
   const action = mechanic ? updateMechanic : createMechanic;
   const [state, formAction] = useActionState(action, null);
+  const router = useRouter();
+
+  // Redirect after successful update
+  useEffect(() => {
+    if (state?.success && mechanic) {
+      const timer = setTimeout(() => {
+        router.push('/admin/mechanics');
+      }, 2000); // Redirect after 2 seconds to show success message
+
+      return () => clearTimeout(timer);
+    }
+  }, [state?.success, mechanic, router]);
 
   return (
     <form action={formAction} className="space-y-4">
       {state?.error && (
         <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
           {state.error}
+        </div>
+      )}
+
+      {state?.success && (
+        <div className="bg-green-50 text-green-600 p-3 rounded-md text-sm">
+          {state.success}
+          {mechanic && (
+            <div className="text-xs mt-1">
+              Akan kembali ke daftar mekanik dalam 2 detik...
+            </div>
+          )}
         </div>
       )}
 

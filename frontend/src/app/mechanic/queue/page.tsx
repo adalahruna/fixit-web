@@ -11,27 +11,47 @@ export default async function MechanicQueuePage() {
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
   
-  // Get user data from users table
-  const { data: userData } = await supabase
-    .from('users')
-    .select('name')
-    .eq('id', user?.id)
-    .single();
-  
-  // Get mechanic data by matching user name
+  // Get mechanic data by user_id (proper relation)
   const { data: mechanic } = await supabase
     .from('mechanics')
-    .select('id, name')
-    .eq('name', userData?.name || '')
+    .select('id, name, user_id')
+    .eq('user_id', user?.id)
     .single();
 
-  if (!mechanic) {
+  // Fallback: if no user_id relation exists, try matching by name (temporary)
+  let mechanicData = mechanic;
+  if (!mechanicData) {
+    // Get user data from users table for fallback
+    const { data: userData } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', user?.id)
+      .single();
+    
+    const { data: fallbackMechanic } = await supabase
+      .from('mechanics')
+      .select('id, name')
+      .eq('name', userData?.name || '')
+      .single();
+    mechanicData = fallbackMechanic;
+  }
+
+  if (!mechanicData) {
     return (
       <div>
         <h1 className="text-3xl font-bold mb-6">Antrian Saya</h1>
         <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-lg">
-          <p className="text-yellow-800">
-            Data mekanik tidak ditemukan. Hubungi admin untuk setup akun mekanik Anda.
+          <h3 className="text-lg font-semibold text-yellow-800 mb-2">Data Mekanik Tidak Ditemukan</h3>
+          <p className="text-yellow-700 mb-4">
+            Akun Anda belum terhubung dengan data mekanik. Ini bisa terjadi karena:
+          </p>
+          <ul className="list-disc list-inside text-yellow-700 mb-4 space-y-1">
+            <li>Admin belum membuat data mekanik untuk akun Anda</li>
+            <li>Nama di akun user tidak sama dengan nama di data mekanik</li>
+            <li>Relasi antara user dan mekanik belum diatur dengan benar</li>
+          </ul>
+          <p className="text-yellow-800 font-medium">
+            Hubungi admin untuk menghubungkan akun Anda dengan data mekanik.
           </p>
         </div>
       </div>
@@ -64,7 +84,7 @@ export default async function MechanicQueuePage() {
         )
       )
     `)
-    .eq('mechanic_id', mechanic.id)
+    .eq('mechanic_id', mechanicData.id)
     .order('queue_position', { ascending: true });
 
   const getStatusBadge = (status: string) => {
@@ -90,7 +110,12 @@ export default async function MechanicQueuePage() {
   return (
     <div>
       <RealtimeBookingList />
-      <h1 className="text-3xl font-bold mb-6">Antrian Saya</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Antrian Saya</h1>
+        <div className="text-sm text-gray-600">
+          Mekanik: <span className="font-medium">{mechanicData.name}</span>
+        </div>
+      </div>
 
       {!assignments || assignments.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">

@@ -8,38 +8,42 @@ export default async function MechanicDashboard() {
   
   const supabase = await createClient();
   
-  // Get user data from users table
-  const { data: userData } = await supabase
-    .from('users')
-    .select('name')
-    .eq('id', user.id)
-    .single();
-  
-  // Get mechanic data
+  // Get mechanic data by user_id (proper relation)
   const { data: mechanic } = await supabase
     .from('mechanics')
-    .select('id, name')
-    .eq('name', userData?.name || '')
+    .select('id, name, user_id')
+    .eq('user_id', user.id)
     .single();
+
+  // Fallback: if no user_id relation exists, try matching by name (temporary)
+  let mechanicData = mechanic;
+  if (!mechanicData) {
+    const { data: fallbackMechanic } = await supabase
+      .from('mechanics')
+      .select('id, name')
+      .eq('name', user.name)
+      .single();
+    mechanicData = fallbackMechanic;
+  }
 
   // Get queue stats
   let queueCount = 0;
   let inProgressCount = 0;
   let completedToday = 0;
   
-  if (mechanic) {
+  if (mechanicData) {
     // Total assignments
     const { count: totalQueue } = await supabase
       .from('assignments')
       .select('*', { count: 'exact', head: true })
-      .eq('mechanic_id', mechanic.id);
+      .eq('mechanic_id', mechanicData.id);
     queueCount = totalQueue || 0;
 
     // In progress bookings
     const { count: inProgress } = await supabase
       .from('bookings')
       .select('*, assignments!inner(*)', { count: 'exact', head: true })
-      .eq('assignments.mechanic_id', mechanic.id)
+      .eq('assignments.mechanic_id', mechanicData.id)
       .eq('status', 'in_progress');
     inProgressCount = inProgress || 0;
 
@@ -48,7 +52,7 @@ export default async function MechanicDashboard() {
     const { count: completed } = await supabase
       .from('service_progress')
       .select('*, assignments!inner(*)', { count: 'exact', head: true })
-      .eq('assignments.mechanic_id', mechanic.id)
+      .eq('assignments.mechanic_id', mechanicData.id)
       .gte('end_time', `${today}T00:00:00`)
       .lt('end_time', `${today}T23:59:59`);
     completedToday = completed || 0;
@@ -76,6 +80,13 @@ export default async function MechanicDashboard() {
         <p className="text-gray-600">
           Kelola antrian servis Anda dengan mudah.
         </p>
+        {!mechanicData && (
+          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-800 text-sm">
+              ⚠️ Data mekanik belum terhubung dengan akun Anda. Hubungi admin untuk menghubungkan akun.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Quick Navigation */}
