@@ -2,6 +2,22 @@ import { requireRole } from '@/lib/auth/utils';
 import { getAuditLogs } from '@/lib/audit/actions';
 import Link from 'next/link';
 
+interface AuditLogWithActor {
+  id: string;
+  actor_id?: string;
+  action: string;
+  entity: string;
+  entity_id?: string;
+  timestamp_log: string;
+  metadata?: Record<string, unknown>;
+  actor?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
+}
+
 interface SearchParams {
   page?: string;
   entity?: string;
@@ -161,7 +177,7 @@ export default async function AuditLogsPage({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {auditData.logs.map((log: any) => (
+              {auditData.logs.map((log: AuditLogWithActor) => (
                 <tr key={log.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {formatDateTime(log.timestamp_log)}
@@ -219,7 +235,7 @@ export default async function AuditLogsPage({
         <div className="flex justify-center space-x-2">
           {page > 1 && (
             <Link
-              href={`?page=${page - 1}&${new URLSearchParams(filters as any).toString()}`}
+              href={`?page=${page - 1}&${new URLSearchParams(filters as Record<string, string>).toString()}`}
               className="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Previous
@@ -232,7 +248,7 @@ export default async function AuditLogsPage({
           
           {page < auditData.totalPages && (
             <Link
-              href={`?page=${page + 1}&${new URLSearchParams(filters as any).toString()}`}
+              href={`?page=${page + 1}&${new URLSearchParams(filters as Record<string, string>).toString()}`}
               className="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Next
