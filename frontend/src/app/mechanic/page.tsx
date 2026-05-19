@@ -16,7 +16,7 @@ export default async function MechanicDashboard() {
     .single();
 
   // Fallback: if no user_id relation exists, try matching by name (temporary)
-  let mechanicData = mechanic;
+  let mechanicData: { id: string; name: string; user_id?: string } | null = mechanic;
   if (!mechanicData) {
     const { data: fallbackMechanic } = await supabase
       .from('mechanics')

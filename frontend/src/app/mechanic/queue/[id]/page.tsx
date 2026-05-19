@@ -18,21 +18,32 @@ export default async function MechanicBookingDetailPage({
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
   
-  // Get user data from users table
-  const { data: userData } = await supabase
-    .from('users')
-    .select('name')
-    .eq('id', user?.id)
-    .single();
-  
-  // Get mechanic data
+  // Get mechanic data by user_id (proper relation)
   const { data: mechanic } = await supabase
     .from('mechanics')
-    .select('id, name')
-    .eq('name', userData?.name || '')
+    .select('id, name, user_id')
+    .eq('user_id', user?.id)
     .single();
 
-  if (!mechanic) {
+  // Fallback: if no user_id relation exists, try matching by name (temporary)
+  let mechanicData: { id: string; name: string; user_id?: string } | null = mechanic;
+  if (!mechanicData) {
+    // Get user data from users table for fallback
+    const { data: userData } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', user?.id)
+      .single();
+    
+    const { data: fallbackMechanic } = await supabase
+      .from('mechanics')
+      .select('id, name')
+      .eq('name', userData?.name || '')
+      .single();
+    mechanicData = fallbackMechanic;
+  }
+
+  if (!mechanicData) {
     return (
       <div>
         <h1 className="text-3xl font-bold mb-6">Detail Booking</h1>
@@ -76,7 +87,7 @@ export default async function MechanicBookingDetailPage({
       )
     `)
     .eq('booking_id', id)
-    .eq('mechanic_id', mechanic.id)
+    .eq('mechanic_id', mechanicData.id)
     .single();
 
   if (!assignment) {

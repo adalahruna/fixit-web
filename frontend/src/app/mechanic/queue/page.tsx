@@ -19,7 +19,7 @@ export default async function MechanicQueuePage() {
     .single();
 
   // Fallback: if no user_id relation exists, try matching by name (temporary)
-  let mechanicData = mechanic;
+  let mechanicData: { id: string; name: string; user_id?: string } | null = mechanic;
   if (!mechanicData) {
     // Get user data from users table for fallback
     const { data: userData } = await supabase
