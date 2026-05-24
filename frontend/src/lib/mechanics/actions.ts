@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '../supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidateMechanicPaths } from '../utils/revalidation';
 import { redirect } from 'next/navigation';
 
 export async function createMechanic(_prevState: unknown, formData: FormData) {
@@ -27,7 +27,7 @@ export async function createMechanic(_prevState: unknown, formData: FormData) {
     return { error: error.message };
   }
 
-  revalidatePath('/admin/mechanics');
+  revalidateMechanicPaths();
   
   // For create, we can redirect immediately since there's no user sync needed
   redirect('/admin/mechanics');
@@ -119,7 +119,7 @@ export async function updateMechanic(_prevState: unknown, formData: FormData) {
       }
     }
 
-    revalidatePath('/admin/mechanics');
+    revalidateMechanicPaths();
     
     // Return success message instead of redirecting immediately
     // This allows the form to show success feedback
@@ -180,7 +180,7 @@ export async function linkMechanicWithUser(_prevState: unknown, formData: FormDa
       return { error: linkError.message };
     }
 
-    revalidatePath('/admin/mechanics');
+    revalidateMechanicPaths();
     return { success: 'Mekanik berhasil dihubungkan dengan user' };
   } catch (error) {
     console.error('Error linking mechanic with user:', error);

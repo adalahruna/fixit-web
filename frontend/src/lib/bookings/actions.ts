@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '../supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidateBookingPaths } from '../utils/revalidation';
 import { redirect } from 'next/navigation';
 import { localToUTC } from '../utils/datetime';
 import { checkSlotAvailability } from '../utils/slot-availability';
@@ -28,6 +28,16 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
   // Validation
   if (!scheduledDate || !scheduledTime) {
     return { error: 'Tanggal dan jam servis wajib diisi' };
+  }
+
+  // Validate operational hours (08:00 - 17:00 WIB)
+  const [hours, minutes] = scheduledTime.split(':').map(Number);
+  const timeInMinutes = hours * 60 + minutes;
+  const startTime = 8 * 60; // 08:00
+  const endTime = 17 * 60; // 17:00
+
+  if (timeInMinutes < startTime || timeInMinutes > endTime) {
+    return { error: 'Jam operasional: 08:00 - 17:00 WIB' };
   }
 
   if (!vehiclePlate || !vehicleType) {
@@ -142,6 +152,6 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     }
   );
 
-  revalidatePath('/customer/bookings');
+  revalidateBookingPaths(booking.id);
   redirect('/customer/bookings');
 }

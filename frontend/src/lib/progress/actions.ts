@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '../supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidateBookingPaths } from '../utils/revalidation';
 
 export async function startService(bookingId: string) {
   const supabase = await createClient();
@@ -12,60 +12,23 @@ export async function startService(bookingId: string) {
     return { error: 'Unauthorized' };
   }
 
-  // Verify user is assigned mechanic
-  const { data: assignment } = await supabase
-    .from('assignments')
-    .select('mechanic_id')
-    .eq('booking_id', bookingId)
-    .single();
-
-  if (!assignment) {
-    return { error: 'Booking tidak di-assign' };
-  }
-
-  // Get mechanic data
-  const { data: userData } = await supabase
-    .from('users')
-    .select('name')
-    .eq('id', user.id)
-    .single();
-
-  const { data: mechanic } = await supabase
-    .from('mechanics')
-    .select('id')
-    .eq('name', userData?.name)
-    .single();
-
-  if (!mechanic || mechanic.id !== assignment.mechanic_id) {
-    return { error: 'Anda tidak di-assign untuk booking ini' };
-  }
-
-  // Update service_progress status
-  const { error } = await supabase
-    .from('service_progress')
-    .update({
-      status: 'in_progress',
-      start_time: new Date().toISOString(),
-    })
-    .eq('booking_id', bookingId)
-    .eq('status', 'queued');
+  // Use atomic database function for status update
+  const { data: result, error } = await supabase
+    .rpc('start_service_atomic', {
+      p_booking_id: bookingId,
+      p_mechanic_user_id: user.id
+    });
 
   if (error) {
     return { error: error.message };
   }
 
-  // Update booking status
-  const { error: bookingError } = await supabase
-    .from('bookings')
-    .update({ status: 'in_progress' })
-    .eq('id', bookingId);
-
-  if (bookingError) {
-    return { error: bookingError.message };
+  if (result?.error) {
+    return { error: result.error };
   }
 
-  revalidatePath(`/mechanic/queue/${bookingId}`);
-  revalidatePath(`/customer/bookings/${bookingId}`);
+  // Revalidate all related paths
+  revalidateBookingPaths(bookingId);
   return { success: true };
 }
 
@@ -78,60 +41,22 @@ export async function completeService(bookingId: string) {
     return { error: 'Unauthorized' };
   }
 
-  // Verify user is assigned mechanic
-  const { data: assignment } = await supabase
-    .from('assignments')
-    .select('mechanic_id')
-    .eq('booking_id', bookingId)
-    .single();
-
-  if (!assignment) {
-    return { error: 'Booking tidak di-assign' };
-  }
-
-  // Get mechanic data
-  const { data: userData } = await supabase
-    .from('users')
-    .select('name')
-    .eq('id', user.id)
-    .single();
-
-  const { data: mechanic } = await supabase
-    .from('mechanics')
-    .select('id')
-    .eq('name', userData?.name)
-    .single();
-
-  if (!mechanic || mechanic.id !== assignment.mechanic_id) {
-    return { error: 'Anda tidak di-assign untuk booking ini' };
-  }
-
-  // Update service_progress status
-  const { error } = await supabase
-    .from('service_progress')
-    .update({
-      status: 'done',
-      end_time: new Date().toISOString(),
-    })
-    .eq('booking_id', bookingId)
-    .eq('status', 'in_progress');
+  // Use atomic database function for status update
+  const { data: result, error } = await supabase
+    .rpc('complete_service_atomic', {
+      p_booking_id: bookingId,
+      p_mechanic_user_id: user.id
+    });
 
   if (error) {
     return { error: error.message };
   }
 
-  // Update booking status to done
-  const { error: bookingError } = await supabase
-    .from('bookings')
-    .update({ status: 'done' })
-    .eq('id', bookingId);
-
-  if (bookingError) {
-    return { error: bookingError.message };
+  if (result?.error) {
+    return { error: result.error };
   }
 
-  revalidatePath(`/mechanic/queue/${bookingId}`);
-  revalidatePath('/mechanic/queue');
-  revalidatePath(`/customer/bookings/${bookingId}`);
+  // Revalidate all related paths
+  revalidateBookingPaths(bookingId);
   return { success: true };
 }

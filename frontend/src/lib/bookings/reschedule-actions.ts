@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '../supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidateBookingPaths } from '../utils/revalidation';
 import { localToUTC } from '../utils/datetime';
 import { checkSlotAvailability } from '../utils/slot-availability';
 
@@ -56,6 +56,16 @@ export async function rescheduleBooking(
   const newScheduleStart = localToUTC(newDate, newTime);
   const newScheduleStartDate = new Date(newScheduleStart);
 
+  // Validate operational hours (08:00 - 17:00 WIB)
+  const [hours, minutes] = newTime.split(':').map(Number);
+  const timeInMinutes = hours * 60 + minutes;
+  const startTime = 8 * 60; // 08:00
+  const endTime = 17 * 60; // 17:00
+
+  if (timeInMinutes < startTime || timeInMinutes > endTime) {
+    return { error: 'Jam operasional: 08:00 - 17:00 WIB' };
+  }
+
   // Calculate estimated duration
   const estimatedDuration = booking.booking_services && booking.booking_services.length > 0
     ? booking.booking_services.reduce(
@@ -91,10 +101,7 @@ export async function rescheduleBooking(
   }
 
   // Revalidate paths
-  revalidatePath('/customer/bookings');
-  revalidatePath(`/customer/bookings/${bookingId}`);
-  revalidatePath('/admin/bookings');
-  revalidatePath(`/admin/bookings/${bookingId}`);
+  revalidateBookingPaths(bookingId);
 
   return { success: true, message: 'Booking berhasil di-reschedule' };
 }

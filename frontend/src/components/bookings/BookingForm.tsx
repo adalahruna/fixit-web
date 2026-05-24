@@ -21,11 +21,39 @@ export function BookingForm({ services }: BookingFormProps) {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [timeError, setTimeError] = useState('');
   const [slotStatus, setSlotStatus] = useState<{
     checking: boolean;
     available?: boolean;
     message?: string;
   }>({ checking: false });
+
+  // Validate operational hours
+  const validateOperationalHours = (time: string) => {
+    if (!time) {
+      setTimeError('');
+      return true;
+    }
+
+    const [hours, minutes] = time.split(':').map(Number);
+    const timeInMinutes = hours * 60 + minutes;
+    const startTime = 8 * 60; // 08:00
+    const endTime = 17 * 60; // 17:00
+
+    if (timeInMinutes < startTime || timeInMinutes > endTime) {
+      setTimeError('Jam operasional: 08:00 - 17:00 WIB');
+      return false;
+    }
+
+    setTimeError('');
+    return true;
+  };
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = e.target.value;
+    setSelectedTime(time);
+    validateOperationalHours(time);
+  };
 
   // Calculate estimated duration based on selected services
   const estimatedDuration = selectedServices.length > 0
@@ -121,11 +149,22 @@ export function BookingForm({ services }: BookingFormProps) {
               id="scheduled_time"
               name="scheduled_time"
               required
+              min="08:00"
+              max="17:00"
               value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleTimeChange}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                timeError 
+                  ? 'border-red-300 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
             />
-            <p className="text-xs text-gray-500 mt-1">Waktu Indonesia Barat (WIB)</p>
+            {timeError && (
+              <p className="text-xs text-red-600 mt-1">{timeError}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Jam operasional: 08:00 - 17:00 WIB
+            </p>
           </div>
         </div>
 
@@ -245,7 +284,7 @@ export function BookingForm({ services }: BookingFormProps) {
         </button>
         <button
           type="submit"
-          disabled={slotStatus.available === false}
+          disabled={slotStatus.available === false || !!timeError}
           className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           Buat Booking

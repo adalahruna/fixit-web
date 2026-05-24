@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '../supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidateAssignmentPaths } from '../utils/revalidation';
 
 export async function assignMechanic(bookingId: string, mechanicId: string) {
   const supabase = await createClient();
@@ -23,56 +23,23 @@ export async function assignMechanic(bookingId: string, mechanicId: string) {
     return { error: 'Forbidden: Only admin/owner can assign mechanics' };
   }
 
-  // Get current queue position for this mechanic
-  const { data: existingAssignments } = await supabase
-    .from('assignments')
-    .select('queue_position')
-    .eq('mechanic_id', mechanicId)
-    .order('queue_position', { ascending: false })
-    .limit(1);
-
-  const nextPosition = existingAssignments && existingAssignments.length > 0 
-    ? existingAssignments[0].queue_position + 1 
-    : 1;
-
-  // Create assignment
-  const { error: assignError } = await supabase
-    .from('assignments')
-    .insert({
-      booking_id: bookingId,
-      mechanic_id: mechanicId,
-      queue_position: nextPosition,
+  // Use atomic database function for assignment
+  const { data: result, error } = await supabase
+    .rpc('assign_mechanic_atomic', {
+      p_booking_id: bookingId,
+      p_mechanic_id: mechanicId
     });
 
-  if (assignError) {
-    return { error: assignError.message };
+  if (error) {
+    return { error: error.message };
   }
 
-  // Update booking status to confirmed
-  const { error: updateError } = await supabase
-    .from('bookings')
-    .update({ status: 'confirmed' })
-    .eq('id', bookingId);
-
-  if (updateError) {
-    return { error: updateError.message };
+  if (result?.error) {
+    return { error: result.error };
   }
 
-  // Create service_progress record with queued status
-  const { error: progressError } = await supabase
-    .from('service_progress')
-    .insert({
-      booking_id: bookingId,
-      status: 'queued',
-    });
-
-  if (progressError) {
-    return { error: progressError.message };
-  }
-
-  revalidatePath('/admin/bookings');
-  revalidatePath('/mechanic');
-  
+  // Revalidate all related paths
+  revalidateAssignmentPaths(bookingId);
   return { success: true };
 }
 
@@ -96,34 +63,21 @@ export async function unassignMechanic(bookingId: string) {
     return { error: 'Forbidden: Only admin/owner can unassign mechanics' };
   }
 
-  // Delete assignment
-  const { error: deleteError } = await supabase
-    .from('assignments')
-    .delete()
-    .eq('booking_id', bookingId);
+  // Use atomic database function for unassignment
+  const { data: result, error } = await supabase
+    .rpc('unassign_mechanic_atomic', {
+      p_booking_id: bookingId
+    });
 
-  if (deleteError) {
-    return { error: deleteError.message };
+  if (error) {
+    return { error: error.message };
   }
 
-  // Update booking status back to pending
-  const { error: updateError } = await supabase
-    .from('bookings')
-    .update({ status: 'pending' })
-    .eq('id', bookingId);
-
-  if (updateError) {
-    return { error: updateError.message };
+  if (result?.error) {
+    return { error: result.error };
   }
 
-  // Delete service_progress record
-  await supabase
-    .from('service_progress')
-    .delete()
-    .eq('booking_id', bookingId);
-
-  revalidatePath('/admin/bookings');
-  revalidatePath('/mechanic');
-  
+  // Revalidate all related paths
+  revalidateAssignmentPaths(bookingId);
   return { success: true };
 }

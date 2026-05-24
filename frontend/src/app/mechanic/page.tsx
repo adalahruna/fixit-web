@@ -15,15 +15,21 @@ export default async function MechanicDashboard() {
     .eq('user_id', user.id)
     .single();
 
-  // Fallback: if no user_id relation exists, try matching by name (temporary)
-  let mechanicData: { id: string; name: string; user_id?: string } | null = mechanic;
-  if (!mechanicData) {
-    const { data: fallbackMechanic } = await supabase
-      .from('mechanics')
-      .select('id, name')
-      .eq('name', user.name)
-      .single();
-    mechanicData = fallbackMechanic;
+  if (!mechanic) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Dashboard Mekanik</h1>
+        </div>
+        
+        <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-lg">
+          <h3 className="text-lg font-semibold text-yellow-800 mb-2">Data Mekanik Tidak Ditemukan</h3>
+          <p className="text-yellow-700 mb-4">
+            Akun Anda belum terhubung dengan data mekanik. Hubungi admin untuk menghubungkan akun Anda.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Get queue stats
@@ -31,19 +37,19 @@ export default async function MechanicDashboard() {
   let inProgressCount = 0;
   let completedToday = 0;
   
-  if (mechanicData) {
+  if (mechanic) {
     // Total assignments
     const { count: totalQueue } = await supabase
       .from('assignments')
       .select('*', { count: 'exact', head: true })
-      .eq('mechanic_id', mechanicData.id);
+      .eq('mechanic_id', mechanic.id);
     queueCount = totalQueue || 0;
 
     // In progress bookings
     const { count: inProgress } = await supabase
       .from('bookings')
       .select('*, assignments!inner(*)', { count: 'exact', head: true })
-      .eq('assignments.mechanic_id', mechanicData.id)
+      .eq('assignments.mechanic_id', mechanic.id)
       .eq('status', 'in_progress');
     inProgressCount = inProgress || 0;
 
@@ -52,7 +58,7 @@ export default async function MechanicDashboard() {
     const { count: completed } = await supabase
       .from('service_progress')
       .select('*, assignments!inner(*)', { count: 'exact', head: true })
-      .eq('assignments.mechanic_id', mechanicData.id)
+      .eq('assignments.mechanic_id', mechanic.id)
       .gte('end_time', `${today}T00:00:00`)
       .lt('end_time', `${today}T23:59:59`);
     completedToday = completed || 0;
@@ -80,7 +86,7 @@ export default async function MechanicDashboard() {
         <p className="text-gray-600">
           Kelola antrian servis Anda dengan mudah.
         </p>
-        {!mechanicData && (
+        {!mechanic && (
           <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-yellow-800 text-sm">
               ⚠️ Data mekanik belum terhubung dengan akun Anda. Hubungi admin untuk menghubungkan akun.

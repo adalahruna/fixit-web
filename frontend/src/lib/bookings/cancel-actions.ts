@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidateBookingPaths } from '../utils/revalidation';
 import { logAuditActivity } from '@/lib/audit/actions';
 import { AUDIT_ACTIONS, AUDIT_ENTITIES } from '@/lib/audit/constants';
 
@@ -71,8 +71,7 @@ export async function cancelBooking(bookingId: string) {
   // Ignore error if service_progress doesn't exist (booking not assigned yet)
 
   // Revalidate paths
-  revalidatePath('/customer/bookings');
-  revalidatePath(`/customer/bookings/${bookingId}`);
+  revalidateBookingPaths(bookingId);
 
   // Log audit activity
   await logAuditActivity(

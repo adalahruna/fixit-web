@@ -18,6 +18,28 @@ export default function RescheduleForm({
 }: RescheduleFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [timeError, setTimeError] = useState('');
+
+  // Validate operational hours
+  const validateOperationalHours = (time: string) => {
+    if (!time) {
+      setTimeError('');
+      return true;
+    }
+
+    const [hours, minutes] = time.split(':').map(Number);
+    const timeInMinutes = hours * 60 + minutes;
+    const startTime = 8 * 60; // 08:00
+    const endTime = 17 * 60; // 17:00
+
+    if (timeInMinutes < startTime || timeInMinutes > endTime) {
+      setTimeError('Jam operasional: 08:00 - 17:00 WIB');
+      return false;
+    }
+
+    setTimeError('');
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -86,9 +108,22 @@ export default function RescheduleForm({
           type="time"
           id="newTime"
           name="newTime"
+          min="08:00"
+          max="17:00"
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(e) => validateOperationalHours(e.target.value)}
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+            timeError 
+              ? 'border-red-300 focus:ring-red-500' 
+              : 'border-gray-300 focus:ring-blue-500'
+          }`}
         />
+        {timeError && (
+          <p className="text-xs text-red-600 mt-1">{timeError}</p>
+        )}
+        <p className="text-xs text-gray-500 mt-1">
+          Jam operasional: 08:00 - 17:00 WIB
+        </p>
       </div>
 
       {error && (
@@ -100,7 +135,7 @@ export default function RescheduleForm({
       <div className="flex gap-3">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !!timeError}
           className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {loading ? 'Memproses...' : 'Reschedule'}

@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '../supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidateServicePaths } from '../utils/revalidation';
 import { redirect } from 'next/navigation';
 
 export async function createService(_prevState: unknown, formData: FormData) {
@@ -25,7 +25,7 @@ export async function createService(_prevState: unknown, formData: FormData) {
     return { error: error.message };
   }
 
-  revalidatePath('/admin/services');
+  revalidateServicePaths();
   redirect('/admin/services');
 }
 
@@ -54,7 +54,7 @@ export async function updateService(_prevState: unknown, formData: FormData) {
     return { error: error.message };
   }
 
-  revalidatePath('/admin/services');
+  revalidateServicePaths();
   redirect('/admin/services');
 }
 
@@ -70,6 +70,6 @@ export async function deleteService(id: string) {
     return { error: error.message };
   }
 
-  revalidatePath('/admin/services');
+  revalidateServicePaths();
   return { success: true };
 }
