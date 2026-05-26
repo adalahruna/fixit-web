@@ -1,6 +1,6 @@
 import { requireRole } from '@/lib/auth/utils';
-import { logout } from '@/lib/auth/actions';
 import Link from 'next/link';
+import LogoutButton from '@/components/auth/LogoutButton';
 
 export default async function MechanicLayout({
   children,
@@ -24,14 +24,7 @@ export default async function MechanicLayout({
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">{user.name}</span>
-              <form action={logout}>
-                <button
-                  type="submit"
-                  className="text-sm text-red-600 hover:text-red-700"
-                >
-                  Logout
-                </button>
-              </form>
+              <LogoutButton />
             </div>
           </div>
         </div>

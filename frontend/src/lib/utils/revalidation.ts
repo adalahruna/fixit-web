@@ -8,6 +8,8 @@ export function revalidateBookingPaths(bookingId: string) {
   // Admin paths
   revalidatePath('/admin/bookings');
   revalidatePath(`/admin/bookings/${bookingId}`);
+  revalidatePath('/admin/dashboard'); // KPI dashboard
+  revalidatePath('/admin/sla'); // SLA monitoring
   
   // Mechanic paths
   revalidatePath('/mechanic');

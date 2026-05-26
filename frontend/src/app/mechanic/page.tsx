@@ -3,6 +3,10 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import QuickNavigation, { mechanicNavigationItems } from '@/components/dashboard/QuickNavigation';
 
+// Force dynamic rendering - no caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function MechanicDashboard() {
   const user = await requireRole(['mechanic']);
   
@@ -32,36 +36,53 @@ export default async function MechanicDashboard() {
     );
   }
 
-  // Get queue stats
+  // Get queue stats - TWO-STEP APPROACH to avoid RLS issues with joins
   let queueCount = 0;
   let inProgressCount = 0;
   let completedToday = 0;
   
   if (mechanic) {
-    // Total assignments
-    const { count: totalQueue } = await supabase
+    // Step 1: Get all booking IDs assigned to this mechanic
+    const { data: assignments } = await supabase
       .from('assignments')
-      .select('*', { count: 'exact', head: true })
+      .select('booking_id')
       .eq('mechanic_id', mechanic.id);
-    queueCount = totalQueue || 0;
+    
+    const bookingIds = assignments?.map(a => a.booking_id) || [];
+    
+    if (bookingIds.length > 0) {
+      // Step 2: Query bookings directly with the booking IDs
+      
+      // Query 1: Count active queue (not done/cancelled)
+      const { data: activeBookings } = await supabase
+        .from('bookings')
+        .select('id, status')
+        .in('id', bookingIds)
+        .not('status', 'in', '(done,cancelled)');
+      
+      queueCount = activeBookings?.length || 0;
 
-    // In progress bookings
-    const { count: inProgress } = await supabase
-      .from('bookings')
-      .select('*, assignments!inner(*)', { count: 'exact', head: true })
-      .eq('assignments.mechanic_id', mechanic.id)
-      .eq('status', 'in_progress');
-    inProgressCount = inProgress || 0;
+      // Query 2: Count in_progress bookings
+      const { data: inProgressBookings } = await supabase
+        .from('bookings')
+        .select('id, status')
+        .in('id', bookingIds)
+        .eq('status', 'in_progress');
+      
+      inProgressCount = inProgressBookings?.length || 0;
 
-    // Completed today
-    const today = new Date().toISOString().split('T')[0];
-    const { count: completed } = await supabase
-      .from('service_progress')
-      .select('*, assignments!inner(*)', { count: 'exact', head: true })
-      .eq('assignments.mechanic_id', mechanic.id)
-      .gte('end_time', `${today}T00:00:00`)
-      .lt('end_time', `${today}T23:59:59`);
-    completedToday = completed || 0;
+      // Query 3: Count completed today from service_progress
+      const today = new Date().toISOString().split('T')[0];
+      const { data: completedProgress } = await supabase
+        .from('service_progress')
+        .select('booking_id, end_time')
+        .in('booking_id', bookingIds)
+        .not('end_time', 'is', null)
+        .gte('end_time', `${today}T00:00:00`)
+        .lt('end_time', `${today}T23:59:59`);
+      
+      completedToday = completedProgress?.length || 0;
+    }
   }
 
   // Add badge to queue navigation if there are items

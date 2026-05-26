@@ -3,6 +3,10 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import RealtimeBookingList from '@/components/bookings/RealtimeBookingList';
 
+// Force dynamic rendering - no caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function MechanicQueuePage() {
   await requireRole(['mechanic']);
   

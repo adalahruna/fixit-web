@@ -73,6 +73,7 @@ export async function calculateKPIMetrics(
   const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
   // Get booking statistics
+  // Filter by schedule_start instead of created_at to include all bookings in the period
   const { data: bookings } = await supabase
     .from('bookings')
     .select(`
@@ -82,7 +83,7 @@ export async function calculateKPIMetrics(
       schedule_end,
       created_at,
       booking_services(
-        service_type:service_types(price, default_duration_minutes)
+        service_type:service_types(price, default_duration_minutes, name)
       ),
       service_progress(
         start_time,
@@ -90,8 +91,8 @@ export async function calculateKPIMetrics(
         actual_duration
       )
     `)
-    .gte('created_at', start.toISOString())
-    .lte('created_at', end.toISOString()) as { data: BookingData[] | null };
+    .gte('schedule_start', start.toISOString())
+    .lte('schedule_start', end.toISOString()) as { data: BookingData[] | null };
 
   const totalBookings = bookings?.length || 0;
   const completedBookings = bookings?.filter(b => b.status === 'done').length || 0;
