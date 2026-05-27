@@ -28,11 +28,22 @@ export function BookingForm({ services }: BookingFormProps) {
     message?: string;
   }>({ checking: false });
 
-  // Validate operational hours
-  const validateOperationalHours = (time: string) => {
+  // Validate operational hours and check if time is in the past
+  const validateOperationalHours = (time: string, date: string) => {
     if (!time) {
       setTimeError('');
       return true;
+    }
+
+    // Check if datetime is in the past
+    if (date && time) {
+      const scheduleDateTime = new Date(`${date}T${time}:00+07:00`); // WIB timezone
+      const now = new Date();
+      
+      if (scheduleDateTime <= now) {
+        setTimeError('Tidak dapat booking di waktu yang sudah lewat');
+        return false;
+      }
     }
 
     const [hours, minutes] = time.split(':').map(Number);
@@ -52,7 +63,15 @@ export function BookingForm({ services }: BookingFormProps) {
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = e.target.value;
     setSelectedTime(time);
-    validateOperationalHours(time);
+    validateOperationalHours(time, selectedDate);
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = e.target.value;
+    setSelectedDate(date);
+    if (selectedTime) {
+      validateOperationalHours(selectedTime, date);
+    }
   };
 
   // Calculate estimated duration based on selected services
@@ -135,7 +154,7 @@ export function BookingForm({ services }: BookingFormProps) {
               required
               min={new Date().toISOString().split('T')[0]}
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
+              onChange={handleDateChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

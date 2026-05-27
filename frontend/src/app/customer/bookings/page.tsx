@@ -3,17 +3,23 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
 import RealtimeBookingList from '@/components/bookings/RealtimeBookingList';
+import BookingFilters from '@/components/bookings/BookingFilters';
 
-export default async function BookingsPage() {
+export default async function BookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   await requireRole(['customer']);
   
   const supabase = await createClient();
+  const params = await searchParams;
   
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
   
-  // Get bookings for current customer
-  const { data: bookings } = await supabase
+  // Build query with filters
+  let query = supabase
     .from('bookings')
     .select(`
       *,
@@ -23,8 +29,28 @@ export default async function BookingsPage() {
         )
       )
     `)
-    .eq('customer_id', user?.id)
-    .order('schedule_start', { ascending: false });
+    .eq('customer_id', user?.id);
+
+  // Apply filters
+  if (params.status) {
+    query = query.eq('status', params.status);
+  }
+
+  if (params.search) {
+    query = query.or(`vehicle_plate.ilike.%${params.search}%,vehicle_type.ilike.%${params.search}%`);
+  }
+
+  if (params.dateFrom) {
+    query = query.gte('schedule_start', new Date(params.dateFrom as string).toISOString());
+  }
+
+  if (params.dateTo) {
+    const dateTo = new Date(params.dateTo as string);
+    dateTo.setHours(23, 59, 59, 999);
+    query = query.lte('schedule_start', dateTo.toISOString());
+  }
+
+  const { data: bookings } = await query.order('schedule_start', { ascending: false });
 
   // Status badge styling
   const getStatusBadge = (status: string) => {
@@ -63,6 +89,8 @@ export default async function BookingsPage() {
           + Buat Booking
         </Link>
       </div>
+
+      <BookingFilters />
 
       {!bookings || bookings.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow text-center">

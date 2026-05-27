@@ -74,6 +74,10 @@ export async function calculateKPIMetrics(
 
   // Get booking statistics
   // Filter by schedule_start instead of created_at to include all bookings in the period
+  // Use lte with end of day to include bookings on the end date
+  const endOfDay = new Date(end);
+  endOfDay.setHours(23, 59, 59, 999);
+  
   const { data: bookings } = await supabase
     .from('bookings')
     .select(`
@@ -92,7 +96,7 @@ export async function calculateKPIMetrics(
       )
     `)
     .gte('schedule_start', start.toISOString())
-    .lte('schedule_start', end.toISOString()) as { data: BookingData[] | null };
+    .lte('schedule_start', endOfDay.toISOString()) as { data: BookingData[] | null };
 
   const totalBookings = bookings?.length || 0;
   const completedBookings = bookings?.filter(b => b.status === 'done').length || 0;
@@ -100,15 +104,21 @@ export async function calculateKPIMetrics(
   const pendingBookings = bookings?.filter(b => ['pending', 'confirmed', 'queued', 'in_progress'].includes(b.status)).length || 0;
 
   // Calculate average service time
-  const completedWithProgress = bookings?.filter(b => 
-    b.status === 'done' && 
-    b.service_progress && 
-    Array.isArray(b.service_progress) && 
-    b.service_progress[0]?.actual_duration
-  ) || [];
+  const completedWithProgress = bookings?.filter(b => {
+    if (b.status !== 'done' || !b.service_progress) return false;
+    
+    // Handle both array and single object
+    const progress = Array.isArray(b.service_progress) 
+      ? b.service_progress[0] 
+      : b.service_progress;
+    
+    return progress?.actual_duration != null && progress.actual_duration > 0;
+  }) || [];
   
   const totalServiceTime = completedWithProgress.reduce((sum, booking) => {
-    const progress = Array.isArray(booking.service_progress) ? booking.service_progress[0] : booking.service_progress;
+    const progress = Array.isArray(booking.service_progress) 
+      ? booking.service_progress[0] 
+      : booking.service_progress;
     return sum + (progress?.actual_duration || 0);
   }, 0);
   

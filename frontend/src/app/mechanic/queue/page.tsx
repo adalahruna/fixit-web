@@ -2,15 +2,21 @@ import { requireRole } from '@/lib/auth/utils';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import RealtimeBookingList from '@/components/bookings/RealtimeBookingList';
+import BookingFilters from '@/components/bookings/BookingFilters';
 
 // Force dynamic rendering - no caching
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default async function MechanicQueuePage() {
+export default async function MechanicQueuePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   await requireRole(['mechanic']);
   
   const supabase = await createClient();
+  const params = await searchParams;
   
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
@@ -44,8 +50,8 @@ export default async function MechanicQueuePage() {
     );
   }
 
-  // Get queue/assignments for this mechanic
-  const { data: assignments } = await supabase
+  // Build query for assignments with filters
+  const query = supabase
     .from('assignments')
     .select(`
       *,
@@ -70,8 +76,60 @@ export default async function MechanicQueuePage() {
         )
       )
     `)
-    .eq('mechanic_id', mechanic.id)
-    .order('queue_position', { ascending: true });
+    .eq('mechanic_id', mechanic.id);
+
+  const { data: assignments } = await query.order('queue_position', { ascending: true });
+
+  // Apply filters on client side (because of nested relations)
+  let filteredAssignments = assignments || [];
+
+  if (params.status) {
+    filteredAssignments = filteredAssignments.filter((assignment) => {
+      const booking = assignment.booking;
+      const progress = booking?.service_progress?.[0];
+      
+      // Map booking status to progress status for filtering
+      if (params.status === 'queued') {
+        return progress?.status === 'queued' || booking?.status === 'confirmed';
+      }
+      if (params.status === 'in_progress') {
+        return progress?.status === 'in_progress' || booking?.status === 'in_progress';
+      }
+      if (params.status === 'done') {
+        return progress?.status === 'done' || booking?.status === 'done';
+      }
+      return booking?.status === params.status;
+    });
+  }
+
+  if (params.search) {
+    const searchLower = (params.search as string).toLowerCase();
+    filteredAssignments = filteredAssignments.filter((assignment) => {
+      const booking = assignment.booking;
+      return (
+        booking?.vehicle_plate?.toLowerCase().includes(searchLower) ||
+        booking?.vehicle_type?.toLowerCase().includes(searchLower) ||
+        booking?.customer?.name?.toLowerCase().includes(searchLower)
+      );
+    });
+  }
+
+  if (params.dateFrom) {
+    const dateFrom = new Date(params.dateFrom as string);
+    filteredAssignments = filteredAssignments.filter((assignment) => {
+      const scheduleStart = new Date(assignment.booking?.schedule_start);
+      return scheduleStart >= dateFrom;
+    });
+  }
+
+  if (params.dateTo) {
+    const dateTo = new Date(params.dateTo as string);
+    dateTo.setHours(23, 59, 59, 999);
+    filteredAssignments = filteredAssignments.filter((assignment) => {
+      const scheduleStart = new Date(assignment.booking?.schedule_start);
+      return scheduleStart <= dateTo;
+    });
+  }
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
@@ -103,13 +161,17 @@ export default async function MechanicQueuePage() {
         </div>
       </div>
 
-      {!assignments || assignments.length === 0 ? (
+      <BookingFilters />
+
+      {!filteredAssignments || filteredAssignments.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
-          Belum ada booking dalam antrian Anda.
+          {params.status || params.search || params.dateFrom || params.dateTo
+            ? 'Tidak ada booking yang sesuai dengan filter.'
+            : 'Belum ada booking dalam antrian Anda.'}
         </div>
       ) : (
         <div className="space-y-4">
-          {assignments.map((assignment: {
+          {filteredAssignments.map((assignment: {
             id: string;
             queue_position: number;
             booking: {

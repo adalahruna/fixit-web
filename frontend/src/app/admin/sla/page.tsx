@@ -12,14 +12,15 @@ interface SearchParams {
 export default async function SLAMonitoringPage({
   searchParams
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
   await requireRole(['admin', 'owner']);
 
+  const params = await searchParams;
   // Get SLA data for the specified date range (default: last 7 days)
   const slaReport = await calculateSLADelay(
-    searchParams.startDate,
-    searchParams.endDate
+    params.startDate,
+    params.endDate
   );
 
   // Get overload detection data

@@ -33,8 +33,23 @@ export function StartServiceButton({ bookingId }: { bookingId: string }) {
 
   async function handleStart(formData: FormData) {
     const result = await startService(bookingId);
+    
+    // Log result for debugging
+    console.log('Start service result:', result);
+    
+    if (result.error) {
+      // Show error to user
+      alert(`Error: ${result.error}`);
+      return;
+    }
+    
     if (result.success) {
+      // Force refresh current page
       router.refresh();
+      // Small delay then refresh again to ensure cache is cleared
+      setTimeout(() => {
+        router.refresh();
+      }, 100);
     }
   }
 
@@ -55,8 +70,23 @@ export function CompleteServiceButton({ bookingId }: { bookingId: string }) {
 
   async function handleComplete(formData: FormData) {
     const result = await completeService(bookingId);
+    
+    // Log result for debugging
+    console.log('Complete service result:', result);
+    
+    if (result.error) {
+      // Show error to user
+      alert(`Error: ${result.error}`);
+      return;
+    }
+    
     if (result.success) {
+      // Force refresh current page
       router.refresh();
+      // Small delay then refresh again to ensure cache is cleared
+      setTimeout(() => {
+        router.refresh();
+      }, 100);
     }
   }
 

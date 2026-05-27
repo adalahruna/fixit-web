@@ -12,13 +12,14 @@ interface SearchParams {
 export default async function KPIDashboardPage({
   searchParams
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
   await requireRole(['admin', 'owner']);
 
+  const params = await searchParams;
   const kpiData = await calculateKPIMetrics(
-    searchParams.startDate,
-    searchParams.endDate
+    params.startDate,
+    params.endDate
   );
 
   const formatCurrency = (amount: number) => {
@@ -57,7 +58,7 @@ export default async function KPIDashboardPage({
             <input
               type="date"
               name="startDate"
-              defaultValue={searchParams.startDate || ''}
+              defaultValue={params.startDate || ''}
               className="border border-gray-300 rounded-md px-3 py-2"
             />
           </div>
@@ -68,7 +69,7 @@ export default async function KPIDashboardPage({
             <input
               type="date"
               name="endDate"
-              defaultValue={searchParams.endDate || ''}
+              defaultValue={params.endDate || ''}
               className="border border-gray-300 rounded-md px-3 py-2"
             />
           </div>
@@ -86,7 +87,7 @@ export default async function KPIDashboardPage({
         <KPICard
           title="Total Bookings"
           value={kpiData.totalBookings}
-          subtitle={`Completed: ${kpiData.completedBookings} | Cancelled: ${kpiData.cancelledBookings}`}
+          subtitle={`Completed: ${kpiData.completedBookings} | Cancelled: ${kpiData.cancelledBookings} | Active: ${kpiData.pendingBookings}`}
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />

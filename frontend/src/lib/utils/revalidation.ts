@@ -11,10 +11,13 @@ export function revalidateBookingPaths(bookingId: string) {
   revalidatePath('/admin/dashboard'); // KPI dashboard
   revalidatePath('/admin/sla'); // SLA monitoring
   
-  // Mechanic paths
-  revalidatePath('/mechanic');
-  revalidatePath('/mechanic/queue');
-  revalidatePath(`/mechanic/queue/${bookingId}`);
+  // Mechanic paths - AGGRESSIVE REVALIDATION
+  revalidatePath('/mechanic', 'page'); // Force revalidate mechanic dashboard
+  revalidatePath('/mechanic/queue', 'page');
+  revalidatePath(`/mechanic/queue/${bookingId}`, 'page');
+  
+  // Also revalidate layout to ensure fresh data
+  revalidatePath('/mechanic', 'layout');
   
   // Customer paths
   revalidatePath('/customer/bookings');

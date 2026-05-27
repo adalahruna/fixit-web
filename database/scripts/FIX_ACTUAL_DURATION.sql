@@ -1,57 +1,10 @@
--- Run this script in Supabase SQL Editor to update the atomic functions
--- This fixes the issue where:
--- 1. complete_service_atomic was not calculating actual_duration
--- 2. Bookings status was not being updated properly
+-- CRITICAL FIX: Update complete_service_atomic to calculate actual_duration
+-- Run this in Supabase SQL Editor NOW!
 
--- Function to start service (queued -> in_progress)
-CREATE OR REPLACE FUNCTION start_service_atomic(
-  p_booking_id UUID,
-  p_mechanic_user_id UUID
-) RETURNS JSON AS $$
-DECLARE
-  v_mechanic_id UUID;
-  v_assignment_exists BOOLEAN;
-  v_result JSON;
-BEGIN
-  -- Get mechanic ID from user_id
-  SELECT id INTO v_mechanic_id 
-  FROM mechanics 
-  WHERE user_id = p_mechanic_user_id;
-  
-  IF v_mechanic_id IS NULL THEN
-    RETURN json_build_object('error', 'Mechanic not found for user');
-  END IF;
-  
-  -- Check if assignment exists
-  SELECT EXISTS(
-    SELECT 1 FROM assignments 
-    WHERE booking_id = p_booking_id AND mechanic_id = v_mechanic_id
-  ) INTO v_assignment_exists;
-  
-  IF NOT v_assignment_exists THEN
-    RETURN json_build_object('error', 'Assignment not found');
-  END IF;
-  
-  -- Atomic update: both tables in single transaction
-  UPDATE service_progress 
-  SET 
-    status = 'in_progress',
-    start_time = NOW()
-  WHERE booking_id = p_booking_id AND status = 'queued';
-  
-  IF NOT FOUND THEN
-    RETURN json_build_object('error', 'Service progress not found or not in queued status');
-  END IF;
-  
-  UPDATE bookings 
-  SET status = 'in_progress', updated_at = NOW()
-  WHERE id = p_booking_id;
-  
-  RETURN json_build_object('success', true);
-END;
-$$ LANGUAGE plpgsql;
+-- Drop old function first
+DROP FUNCTION IF EXISTS complete_service_atomic(UUID, UUID);
 
--- Function to complete service (in_progress -> done)
+-- Create new function with actual_duration calculation
 CREATE OR REPLACE FUNCTION complete_service_atomic(
   p_booking_id UUID,
   p_mechanic_user_id UUID
@@ -114,6 +67,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Grant execute permissions
-GRANT EXECUTE ON FUNCTION start_service_atomic(UUID, UUID) TO authenticated;
+-- Grant permissions
 GRANT EXECUTE ON FUNCTION complete_service_atomic(UUID, UUID) TO authenticated;
+
+-- Verify function was created
+SELECT 'Function complete_service_atomic updated successfully!' as status;

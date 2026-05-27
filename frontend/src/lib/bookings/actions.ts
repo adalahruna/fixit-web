@@ -30,6 +30,16 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     return { error: 'Tanggal dan jam servis wajib diisi' };
   }
 
+  // Combine date and time to check if it's in the past
+  const scheduleStart = localToUTC(scheduledDate, scheduledTime);
+  const scheduleStartDate = new Date(scheduleStart);
+  const now = new Date();
+
+  // Check if booking time is in the past
+  if (scheduleStartDate <= now) {
+    return { error: 'Tidak dapat booking di waktu yang sudah lewat. Pilih waktu di masa depan.' };
+  }
+
   // Validate operational hours (08:00 - 17:00 WIB)
   const [hours, minutes] = scheduledTime.split(':').map(Number);
   const timeInMinutes = hours * 60 + minutes;
@@ -48,10 +58,6 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
   if (serviceIds.length === 0 && !consultationText) {
     return { error: 'Jika tidak memilih jenis servis, keluhan/konsultasi wajib diisi' };
   }
-
-  // Combine date and time for schedule_start with WIB timezone
-  const scheduleStart = localToUTC(scheduledDate, scheduledTime);
-  const scheduleStartDate = new Date(scheduleStart);
 
   // Calculate estimated duration and schedule_end
   let estimatedDurationMinutes = 60; // Default jika tidak ada servis

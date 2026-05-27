@@ -3,14 +3,27 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
 import RealtimeBookingList from '@/components/bookings/RealtimeBookingList';
+import BookingFilters from '@/components/bookings/BookingFilters';
 
-export default async function AdminBookingsPage() {
+export default async function AdminBookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   await requireRole(['admin', 'owner']);
   
   const supabase = await createClient();
+  const params = await searchParams;
   
-  // Get all bookings
-  const { data: bookings } = await supabase
+  // Get mechanics for filter
+  const { data: mechanics } = await supabase
+    .from('mechanics')
+    .select('id, name')
+    .eq('is_active', true)
+    .order('name');
+  
+  // Build query with filters
+  let query = supabase
     .from('bookings')
     .select(`
       *,
@@ -28,11 +41,43 @@ export default async function AdminBookingsPage() {
       ),
       assignments (
         mechanic:mechanics (
+          id,
           name
         )
       )
-    `)
-    .order('schedule_start', { ascending: true });
+    `);
+
+  // Apply filters
+  if (params.status) {
+    query = query.eq('status', params.status);
+  }
+
+  if (params.search) {
+    query = query.or(`vehicle_plate.ilike.%${params.search}%,vehicle_type.ilike.%${params.search}%`);
+  }
+
+  if (params.dateFrom) {
+    query = query.gte('schedule_start', new Date(params.dateFrom as string).toISOString());
+  }
+
+  if (params.dateTo) {
+    const dateTo = new Date(params.dateTo as string);
+    dateTo.setHours(23, 59, 59, 999);
+    query = query.lte('schedule_start', dateTo.toISOString());
+  }
+
+  const { data: bookings } = await query.order('schedule_start', { ascending: true });
+
+  // Filter by mechanic on client side (because of nested relation)
+  let filteredBookings = bookings || [];
+  if (params.mechanicId) {
+    filteredBookings = filteredBookings.filter((booking) => {
+      const assignment = Array.isArray(booking.assignments) 
+        ? booking.assignments[0] 
+        : booking.assignments;
+      return assignment?.mechanic?.id === params.mechanicId;
+    });
+  }
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
@@ -63,9 +108,13 @@ export default async function AdminBookingsPage() {
       <RealtimeBookingList />
       <h1 className="text-3xl font-bold mb-6">Kelola Booking</h1>
 
-      {!bookings || bookings.length === 0 ? (
+      <BookingFilters showMechanicFilter={true} mechanics={mechanics || []} />
+
+      {!filteredBookings || filteredBookings.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
-          Belum ada booking.
+          {params.status || params.search || params.dateFrom || params.dateTo || params.mechanicId
+            ? 'Tidak ada booking yang sesuai dengan filter.'
+            : 'Belum ada booking.'}
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -93,7 +142,7 @@ export default async function AdminBookingsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {bookings.map((booking) => (
+              {filteredBookings.map((booking) => (
                 <tr key={booking.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">

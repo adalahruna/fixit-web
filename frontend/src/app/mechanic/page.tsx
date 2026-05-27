@@ -100,6 +100,9 @@ export default async function MechanicDashboard() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Dashboard Mekanik</h1>
+        <div className="text-xs text-gray-400">
+          Last updated: {new Date().toLocaleTimeString('id-ID')}
+        </div>
       </div>
       
       <div className="bg-white p-6 rounded-lg shadow">
