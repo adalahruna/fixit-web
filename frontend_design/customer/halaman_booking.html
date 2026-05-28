@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixit - Buat Booking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f6f7f9;
+            /* Background abu-abu muda */
+            color: #111827;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar-container {
+            background-color: #ffffff;
+            width: 100%;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .brand-icon {
+            background-color: #0052ff;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-menu a {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+            text-decoration: none;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 40px;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        /* Layout 2 Kolom */
+        .layout-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .left-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .right-column {
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: sticky;
+            top: 20px;
+        }
+
+        /* Global Section Title */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .section-title i {
+            color: #0052ff;
+            font-size: 18px;
+        }
+
+        /* --- Section 1: Detail Kendaraan --- */
+        .vehicle-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .input-field input {
+            background-color: #f3f4f6;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        /* --- Section 2: Jenis Servis --- */
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .service-item {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .service-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #eff6ff;
+            color: #0052ff;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .service-item h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .service-item p {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .service-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .service-duration {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .service-price {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0052ff;
+        }
+
+        /* --- Section 3: Jadwal Service --- */
+        .schedule-container {
+            background-color: #f3f4f6;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .date-list {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .date-item {
+            background-color: #ffffff;
+            min-width: 70px;
+            padding: 12px 10px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .date-item .day {
+            font-size: 12px;
+            font-weight: 700;
+            color: #4b5563;
+        }
+
+        .date-item .date {
+            font-size: 20px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .slot-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .time-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .time-slot {
+            background-color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+            cursor: pointer;
+        }
+
+        /* --- Section 4: Keluhan --- */
+        .textarea-box {
+            width: 100%;
+            height: 120px;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 16px;
+            padding: 20px;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+        }
+
+        .textarea-box::placeholder {
+            color: #9ca3af;
+        }
+
+        /* --- Sidebar Kanan: Ringkasan Pesanan --- */
+        .summary-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .summary-card h2 {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 24px;
+        }
+
+        .summary-group {
+            margin-bottom: 16px;
+        }
+
+        .summary-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .summary-value {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .summary-value i {
+            color: #6b7280;
+            margin-right: 8px;
+            font-size: 14px;
+        }
+
+        .summary-value .price-text {
+            color: #0052ff;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 20px 0;
+        }
+
+        .total-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .total-label {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .total-price {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0052ff;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-cancel {
+            background-color: #ffffff;
+            color: #111827;
+            border: 1.5px solid #111827;
+            flex: 1;
+        }
+
+        .btn-confirm {
+            background-color: #0052ff;
+            color: #ffffff;
+            border: none;
+            flex: 2.5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Info Card Mekanik --- */
+        .info-card {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .info-icon {
+            color: #0052ff;
+            font-size: 18px;
+            margin-top: 2px;
+        }
+
+        .info-text h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+        }
+
+        .info-text p {
+            font-size: 12px;
+            color: #3b82f6;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .layout-wrapper {
+                flex-direction: column;
+            }
+
+            .right-column {
+                width: 100%;
+                position: static;
+            }
+
+            .service-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .service-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-bicycle"></i>
+                </div>
+                Fixit
+            </div>
+            <div class="nav-right">
+                <div class="nav-menu">
+                    <a href="#">Dashboard</a>
+                    <a href="#">Booking saya</a>
+                </div>
+                <img src="https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg?w=150"
+                    alt="User Avatar" class="user-avatar">
+            </div>
+        </nav>
+    </div>
+
+    <main class="container">
+
+        <header class="page-header">
+            <h1>Buat Booking</h1>
+            <p>Atur kunjungan perawatan Anda dengan presisi mekanis.</p>
+        </header>
+
+        <div class="layout-wrapper">
+
+            <div class="left-column">
+
+                <div class="vehicle-card">
+                    <div class="section-title">
+                        <i class="fa-solid fa-motorcycle"></i> DETAIL KENDARAAN
+                    </div>
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label>MERK</label>
+                            <input type="text" placeholder="...">
+                        </div>
+                        <div class="input-field">
+                            <label>MODEL</label>
+                            <input type="text" placeholder="...">
+                        </div>
+                        <div class="input-field">
+                            <label>NOMOR POLISI</label>
+                            <input type="text" placeholder="...">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-title">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> JENIS SERVIS
+                    </div>
+                    <div class="service-grid">
+                        <div class="service-item">
+                            <div class="service-icon"><i class="fa-solid fa-oil-can"></i></div>
+                            <h3>Ganti Oli</h3>
+                            <p>Penggantian oli premium full sintetik.</p>
+                            <div class="service-footer">
+                                <span class="service-duration">21 Menit</span>
+                                <span class="service-price">Rp 60.000</span>
+                            </div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-icon"><i class="fa-solid fa-truck-monster"></i></div>
+                            <h3>Ganti Ban</h3>
+                            <p>Pengecekan tekanan dan pemasangan profesional.</p>
+                            <div class="service-footer">
+                                <span class="service-duration">30 Menit</span>
+                                <span class="service-price">Rp 180.000</span>
+                            </div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-icon"><i class="fa-solid fa-gear"></i></div>
+                            <h3>Servis Rutin</h3>
+                            <p>Optimalisasi mesin dan sistem secara menyeluruh.</p>
+                            <div class="service-footer">
+                                <span class="service-duration">1 Jam</span>
+                                <span class="service-price">Rp 80.000</span>
+                            </div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-icon"><i class="fa-solid fa-bolt"></i></div>
+                            <h3>Cek Kelistrikan</h3>
+                            <p>Aki, kabel, dan pemindaian diagnostik.</p>
+                            <div class="service-footer">
+                                <span class="service-duration">45 Menit</span>
+                                <span class="service-price">Rp 80.000</span>
+                            </div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-icon"><i class="fa-solid fa-dharmachakra"></i></div>
+                            <h3>Kampas Rem</h3>
+                            <p>Kampas rem kualitas OEM dan kuras minyak rem.</p>
+                            <div class="service-footer">
+                                <span class="service-duration">25 Menit</span>
+                                <span class="service-price">Rp 80.000</span>
+                            </div>
+                        </div>
+                        <div class="service-item">
+                            <div class="service-icon"><i class="fa-solid fa-link"></i></div>
+                            <h3>Servis CVT/Rantai</h3>
+                            <p>Pembersihan, pelumasan, dan penyetelan.</p>
+                            <div class="service-footer">
+                                <span class="service-duration">55 Menit</span>
+                                <span class="service-price">Rp 80.000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="schedule-container">
+                    <div class="section-title">
+                        <i class="fa-regular fa-calendar-days"></i> JADWAL SERVICE
+                    </div>
+
+                    <div class="date-list">
+                        <div class="date-item">
+                            <span class="day">SEN</span>
+                            <span class="date">12</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="day">SEL</span>
+                            <span class="date">13</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="day">RAB</span>
+                            <span class="date">14</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="day">KAM</span>
+                            <span class="date">15</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="day">JUM</span>
+                            <span class="date">16</span>
+                        </div>
+                        <div class="date-item">
+                            <span class="day">SAB</span>
+                            <span class="date">17</span>
+                        </div>
+                    </div>
+
+                    <div class="slot-title">SLOT TERSEDIA</div>
+                    <div class="time-grid">
+                        <div class="time-slot">09:00</div>
+                        <div class="time-slot">10:00</div>
+                        <div class="time-slot">11:00</div>
+                        <div class="time-slot">13:00</div>
+                        <div class="time-slot">14:00</div>
+                        <div class="time-slot">15:00</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-title">
+                        <i class="fa-regular fa-file-lines"></i> KELUHAN / KONSULTASI
+                    </div>
+                    <textarea class="textarea-box"
+                        placeholder="Wajib diisi jika anda tidak memilih jenis servis"></textarea>
+                </div>
+
+            </div>
+
+            <div class="right-column">
+
+                <div class="summary-card">
+                    <h2>Ringkasan Pesanan</h2>
+
+                    <div class="summary-group">
+                        <div class="summary-label">LAYANAN TERPILIH</div>
+                        <div class="summary-value">
+                            <span>-</span>
+                            <span class="price-text">Rp -</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-group">
+                        <div class="summary-label">KELUHAN / KONSULTASI</div>
+                        <div class="summary-value">
+                            <span>-</span>
+                            <span class="price-text">Rp -</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-group">
+                        <div class="summary-label">TANGGAL & WAKTU</div>
+                        <div class="summary-value">
+                            <span><i class="fa-regular fa-calendar"></i> -</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-group">
+                        <div class="summary-label">KENDARAAN</div>
+                        <div class="summary-value">
+                            <span><i class="fa-solid fa-motorcycle"></i> -</span>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="total-section">
+                        <span class="total-label">Estimasi Total</span>
+                        <span class="total-price">Rp -</span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-cancel">Batal</button>
+                        <button class="btn btn-confirm">Konfirmasi Pesanan <i
+                                class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fa-solid fa-shield-check"></i>
+                    </div>
+                    <div class="info-text">
+                        <h4>Mekanik Bersertifikat</h4>
+                        <p>Teknisi kami bersertifikat untuk motor performa tinggi.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+</body>
+
+</html>

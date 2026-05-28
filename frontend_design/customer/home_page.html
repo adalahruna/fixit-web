@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixit - Servis Motor Masa Depan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Navbar / Header */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: transparent;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .nav-brand i {
+            color: #0052ff;
+            font-size: 24px;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-menu a {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            transition: color 0.2s;
+        }
+
+        .nav-menu a:hover {
+            color: #0052ff;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            color: #0f172a;
+        }
+
+        .hero h1 .text-blue {
+            color: #0052ff;
+        }
+
+        .hero-showcase {
+            position: relative;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 350px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        }
+
+        .badge-powered {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #bfdbfe;
+            color: #1d4ed8;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-img {
+            max-width: 100%;
+            height: auto;
+            max-height: 300px;
+            filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.2));
+        }
+
+        .hero p {
+            color: #64748b;
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+
+        .btn-primary {
+            background-color: #0052ff;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #0044d6;
+            transform: translateY(-2px);
+        }
+
+        /* Services / Estimates Section */
+        .services {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-header h2 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .section-header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .service-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            background-color: #eff6ff;
+            color: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+        }
+
+        .price {
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .service-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .service-card p {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+
+        .duration-wrapper {
+            margin-top: auto;
+        }
+
+        .duration-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #3b82f6;
+            border-radius: 2px;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #ffffff;
+            padding: 60px 20px;
+            margin-top: 60px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .footer-brand {
+            max-width: 350px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 15px;
+        }
+
+        .footer-logo i {
+            color: #0052ff;
+        }
+
+        .footer-brand p {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 80px;
+        }
+
+        .link-group h4 {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .link-group ul {
+            list-style: none;
+        }
+
+        .link-group ul li {
+            margin-bottom: 12px;
+        }
+
+        .link-group ul a {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            transition: color 0.2s;
+        }
+
+        .link-group ul a:hover {
+            color: #0052ff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+            }
+
+            .footer-links {
+                gap: 40px;
+                flex-wrap: wrap;
+            }
+
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .hero-showcase {
+                padding: 20px;
+                min-height: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-brand">
+            <i class="fa-solid fa-bicycle"></i> Fixit
+        </div>
+        <div class="nav-menu">
+            <a href="#">Dashboard</a>
+            <a href="#">Booking saya</a>
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                alt="User Avatar" class="user-avatar">
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Servis Motor <br><span class="text-blue">Masa Depan</span></h1>
+
+        <div class="hero-showcase">
+            <div class="badge-powered">POWERED MAINTENANCE</div>
+            <img src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                alt="Motor Masa Depan" class="hero-img">
+        </div>
+
+        <p>Nikmati kemudahan booking servis motor secara online dengan pemantauan antrian real-time dan mekanik
+            tersertifikasi.</p>
+
+        <button class="btn-primary">Booking Sekarang</button>
+    </section>
+
+    <section class="services">
+        <div class="section-header">
+            <h2>Estimasi Biaya Servis</h2>
+            <p>Estimasi biaya transparan yang disesuaikan dengan kebutuhan motor Anda.</p>
+        </div>
+
+        <div class="cards-grid">
+
+            <div class="service-card">
+                <div class="card-top">
+                    <div class="icon-box"><i class="fa-solid fa-oil-can"></i></div>
+                    <div class="price">Rp 50.000</div>
+                </div>
+                <h3>Ganti Oli</h3>
+                <p>Ganti oli mesin sintetis penuh termasuk filter dan pengecekan umum.</p>
+                <div class="duration-wrapper">
+                    <div class="duration-labels">
+                        <span>ESTIMASI DURASI</span>
+                        <span>45 MENIT</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 25%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="card-top">
+                    <div class="icon-box"><i class="fa-solid fa-gear"></i></div>
+                    <div class="price">Rp 350.000</div>
+                </div>
+                <h3>Servis Rutin</h3>
+                <p>Pembersihan CVT/injeksi, cek busi, filter udara, dan diagnosa mesin.</p>
+                <div class="duration-wrapper">
+                    <div class="duration-labels">
+                        <span>ESTIMASI DURASI</span>
+                        <span>2.5 JAM</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 60%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="card-top">
+                    <div class="icon-box"><i class="fa-solid fa-wrench"></i></div>
+                    <div class="price">Sesuai Kerusakan</div>
+                </div>
+                <h3>Perbaikan Umum</h3>
+                <p>Perbaikan rem, suspensi, dan masalah kelistrikan yang kompleks.</p>
+                <div class="duration-wrapper">
+                    <div class="duration-labels">
+                        <span>ESTIMASI DURASI</span>
+                        <span>VARIABEL</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%;"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <i class="fa-solid fa-car-side"></i> SmartAuto
+                </div>
+                <p>Generasi masa depan perawatan otomotif. Kami menggabungkan teknologi canggih dengan keahlian mekanik
+                    handal untuk menjaga motor Anda tetap prima.</p>
+            </div>
+
+            <div class="footer-links">
+                <div class="link-group">
+                    <h4>PERUSAHAAN</h4>
+                    <ul>
+                        <li><a href="#">Kontak</a></li>
+                        <li><a href="#">Pusat Bantuan</a></li>
+                        <li><a href="#">Tanya Jawab</a></li>
+                    </ul>
+                </div>
+
+                <div class="link-group">
+                    <h4>DUKUNGAN</h4>
+                    <ul>
+                        <li><a href="#">Kontak</a></li>
+                        <li><a href="#">Pusat Bantuan</a></li>
+                        <li><a href="#">Tanya Jawab</a></li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
+</body>
+
+</html>

@@ -2,35 +2,122 @@
 
 import { createClient } from '../supabase/server';
 import { revalidateMechanicPaths } from '../utils/revalidation';
-import { redirect } from 'next/navigation';
 
 export async function createMechanic(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
 
-  const data = {
-    name: formData.get('name') as string,
-    is_active: formData.get('is_active') === 'true',
-    daily_capacity_minutes: formData.get('daily_capacity_minutes') 
-      ? parseInt(formData.get('daily_capacity_minutes') as string) 
-      : null,
-    skill_notes: formData.get('skill_notes') as string || null,
-  };
+  const name = formData.get('name') as string;
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const is_active = formData.get('is_active') === 'true';
+  const daily_capacity_minutes = formData.get('daily_capacity_minutes') 
+    ? parseInt(formData.get('daily_capacity_minutes') as string) 
+    : null;
+  const skill_notes = formData.get('skill_notes') as string || null;
 
   // Validation
-  if (!data.name) {
+  if (!name) {
     return { error: 'Nama mekanik wajib diisi' };
   }
-
-  const { error } = await supabase.from('mechanics').insert(data);
-
-  if (error) {
-    return { error: error.message };
+  if (!email) {
+    return { error: 'Email wajib diisi' };
+  }
+  if (!password || password.length < 6) {
+    return { error: 'Password minimal 6 karakter' };
   }
 
-  revalidateMechanicPaths();
-  
-  // For create, we can redirect immediately since there's no user sync needed
-  redirect('/admin/mechanics');
+  try {
+    // 1. Check if email already exists
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existingUser) {
+      return { error: 'Email sudah terdaftar' };
+    }
+
+    // 2. Get current admin session (to restore later)
+    const { data: { session: adminSession } } = await supabase.auth.getSession();
+
+    // 3. Create user account using signUp
+    // Note: signUp will automatically login as the new user, so we need to restore admin session after
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+          role: 'mechanic'
+        },
+        emailRedirectTo: undefined // Prevent redirect
+      }
+    });
+
+    if (authError || !authData.user) {
+      console.error('Auth error:', authError);
+      return { error: `Gagal membuat akun: ${authError?.message || 'Unknown error'}` };
+    }
+
+    // 4. Immediately restore admin session BEFORE any database operations
+    if (adminSession) {
+      await supabase.auth.setSession({
+        access_token: adminSession.access_token,
+        refresh_token: adminSession.refresh_token
+      });
+    }
+
+    // 5. Create NEW Supabase client with restored admin session
+    const adminSupabase = await createClient();
+
+    // 6. Create user record in users table (using admin client)
+    const { error: userError } = await adminSupabase
+      .from('users')
+      .insert({
+        id: authData.user.id,
+        email,
+        name,
+        role: 'mechanic'
+      });
+
+    if (userError) {
+      console.error('User table error:', userError);
+      return { error: `Gagal menyimpan data user: ${userError.message}` };
+    }
+
+    // 7. Create mechanic record linked to user (using admin client)
+    const { error: mechanicError } = await adminSupabase
+      .from('mechanics')
+      .insert({
+        name,
+        is_active,
+        daily_capacity_minutes,
+        skill_notes,
+        user_id: authData.user.id // Link to user
+      });
+
+    if (mechanicError) {
+      console.error('Mechanic error:', mechanicError);
+      // Cleanup: delete user if mechanic creation fails
+      await adminSupabase.from('users').delete().eq('id', authData.user.id);
+      return { error: `Gagal menyimpan data mekanik: ${mechanicError.message}` };
+    }
+
+    revalidateMechanicPaths();
+    
+    // Return success with account info
+    return { 
+      success: 'Mekanik dan akun login berhasil dibuat!',
+      accountInfo: {
+        email,
+        password // Show password once so admin can give it to mechanic
+      }
+    };
+  } catch (error) {
+    console.error('Error creating mechanic:', error);
+    return { error: 'Terjadi kesalahan saat membuat mekanik' };
+  }
 }
 
 export async function updateMechanic(_prevState: unknown, formData: FormData) {

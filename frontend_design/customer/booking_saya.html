@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixit - Booking Saya</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f4f5f8;
+            /* Background abu-abu muda sesuai desain */
+            color: #111827;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Navbar */
+        .navbar-container {
+            background-color: #ffffff;
+            width: 100%;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .brand-icon {
+            background-color: #0052ff;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-menu a {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .nav-menu a:first-child {
+            color: #4b5563;
+            /* Dashboard agak lebih redup */
+            font-weight: 500;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 50px 40px;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-outline {
+            background-color: #ffffff;
+            color: #111827;
+            border: 1.5px solid #111827;
+        }
+
+        .btn-primary {
+            background-color: #4f7cf6;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(79, 124, 246, 0.3);
+        }
+
+        /* Booking Card */
+        .booking-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        /* Card Header (Vehicle & Status) */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .vehicle-icon {
+            width: 50px;
+            height: 50px;
+            background-color: #eff6ff;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #0052ff;
+            font-size: 20px;
+        }
+
+        .vehicle-details h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .vehicle-details p {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            background-color: #fef3c7;
+            /* Kuning pudar */
+            color: #d97706;
+            /* Teks oranye tua */
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Card Body (Schedules & Services) */
+        .card-body {
+            display: flex;
+            gap: 60px;
+            margin-bottom: 30px;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .info-item i {
+            margin-top: 2px;
+            font-size: 16px;
+        }
+
+        .icon-blue {
+            color: #3b82f6;
+        }
+
+        .icon-gray {
+            color: #9ca3af;
+        }
+
+        .info-content label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .info-content .value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .service-badge {
+            display: inline-block;
+            background-color: #eff6ff;
+            color: #3b82f6;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Notes Box */
+        .notes-box {
+            background-color: #f3f4f6;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .notes-box label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .notes-box p {
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        /* Card Footer */
+        .card-footer {
+            border-top: 1px solid #f3f4f6;
+            padding-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-text {
+            color: #4b5563;
+            font-size: 14px;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-text:hover {
+            color: #111827;
+        }
+
+        .btn-light-blue {
+            background-color: #e0e7ff;
+            color: #0052ff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-light-blue:hover {
+            background-color: #d1dbfe;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .card-body {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .card-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-bicycle"></i>
+                </div>
+                Fixit
+            </div>
+            <div class="nav-right">
+                <div class="nav-menu">
+                    <a href="#">Dashboard</a>
+                    <a href="#">Booking saya</a>
+                </div>
+                <img src="https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg?w=150"
+                    alt="User Avatar" class="user-avatar">
+            </div>
+        </nav>
+    </div>
+
+    <main class="container">
+
+        <div class="page-header">
+            <h1 class="page-title">Booking Saya</h1>
+            <div class="header-actions">
+                <button class="btn btn-outline">History Booking</button>
+                <button class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Book New Service
+                </button>
+            </div>
+        </div>
+
+        <div class="booking-card">
+
+            <div class="card-header">
+                <div class="vehicle-info">
+                    <div class="vehicle-icon">
+                        <i class="fa-solid fa-motorcycle"></i>
+                    </div>
+                    <div class="vehicle-details">
+                        <h2>Ducati Panigale V4</h2>
+                        <p>B 1234 XYZ</p>
+                    </div>
+                </div>
+                <div class="status-badge">MENUNGGU</div>
+            </div>
+
+            <div class="card-body">
+
+                <div class="info-group">
+                    <div class="info-item">
+                        <i class="fa-regular fa-calendar icon-blue"></i>
+                        <div class="info-content">
+                            <label>JADWAL KEDATANGAN</label>
+                            <div class="value">12 APRIL 2026 • 10:00</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fa-regular fa-clock icon-gray"></i>
+                        <div class="info-content">
+                            <label>ESTIMASI SELESAI</label>
+                            <div class="value">14:00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-item">
+                        <div class="info-content">
+                            <label>LAYANAN TERPILIH</label>
+                            <div class="service-badge">Ganti Ban</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="notes-box">
+                <label>CATATAN/KELUHAN:</label>
+                <p>Kalok distater idup</p>
+            </div>
+
+            <div class="card-footer">
+                <button class="btn-text">Reschedule</button>
+                <button class="btn-light-blue">Detail Booking</button>
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>

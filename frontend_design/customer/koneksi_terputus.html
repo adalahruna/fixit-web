@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ops! Koneksi Terputus!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            /* Background gradasi super lembut sesuai gambar */
+            background: radial-gradient(circle at center, #f8fafc 0%, #eef2f6 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Card Container */
+        .error-card {
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Icon Wrapper */
+        .icon-wrapper {
+            background-color: #f3f4f6;
+            /* Warna abu-abu terang */
+            width: 110px;
+            height: 110px;
+            border-radius: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        /* Teks Judul */
+        .error-card h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        /* Teks Deskripsi */
+        .error-card p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 35px;
+            max-width: 320px;
+        }
+
+        /* Tombol Coba Lagi */
+        .btn-retry {
+            background-color: #004cf0;
+            /* Biru vibran */
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 14px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0, 76, 240, 0.25);
+            transition: all 0.2s ease-in-out;
+            margin-bottom: 25px;
+        }
+
+        .btn-retry:hover {
+            background-color: #0040cc;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 76, 240, 0.3);
+        }
+
+        /* Link Kembali ke Beranda */
+        .link-home {
+            font-size: 12px;
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .link-home:hover {
+            color: #1f2937;
+        }
+
+        /* Responsivitas Layar Kecil */
+        @media (max-width: 480px) {
+            .error-card {
+                padding: 40px 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="error-card">
+
+        <div class="icon-wrapper">
+            <svg viewBox="0 0 24 24" width="60" height="60" stroke="#a5b4fc" stroke-width="2.5" fill="none"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.5 8.5C5.8 5.6 10.3 4.6 14.5 5.5" />
+                <path d="M6 12.5C8 10.8 10.8 10.3 13.5 10.9" />
+                <circle cx="12" cy="19.5" r="1.5" fill="#a5b4fc" stroke="none" />
+                <line x1="3" y1="3" x2="21" y2="21" stroke="#a5b4fc" stroke-width="3" />
+            </svg>
+        </div>
+
+        <h1>Ops! Koneksi Terputus!</h1>
+        <p>Sepertinya jaringan internet Anda sedang tidak stabil. Silakan periksa koneksi Wi-Fi atau data Anda dan coba
+            sebentar lagi.</p>
+
+        <button class="btn-retry">Coba Lagi</button>
+
+        <a href="#" class="link-home">Kembali ke Beranda</a>
+
+    </div>
+
+</body>
+
+</html>
+
+```

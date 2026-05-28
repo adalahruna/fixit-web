@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixit - Buat Akun Baru</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #f4f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Card Container */
+        .register-container {
+            display: flex;
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        /* Left Panel - Illustration */
+        .left-panel {
+            flex: 1;
+            background-color: #eef2ff;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .left-panel img {
+            width: 80%;
+            max-width: 300px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .left-panel h2 {
+            color: #111827;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .left-panel p {
+            color: #6b7280;
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 80%;
+        }
+
+        /* Right Panel - Form */
+        .right-panel {
+            flex: 1;
+            padding: 50px 60px;
+            background-color: #ffffff;
+        }
+
+        /* Header / Logo Section */
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            color: #0052ff;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            color: #111827;
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i.icon-left {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .input-wrapper i.icon-right {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #111827;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #0052ff;
+        }
+
+        /* Grid for Phone and Email */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Checkbox Section */
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-top: 3px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .checkbox-group a {
+            color: #0052ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .checkbox-group a:hover {
+            text-decoration: underline;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            background-color: #0052ff;
+            color: #ffffff;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #0044d6;
+        }
+
+        /* Footer Link */
+        .form-footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .form-footer a {
+            color: #0052ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 860px) {
+            .register-container {
+                flex-direction: column;
+            }
+
+            .left-panel,
+            .right-panel {
+                padding: 40px 30px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .left-panel img {
+                display: none;
+                /* Menyembunyikan gambar pada layar kecil agar fokus ke form */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="register-container">
+
+        <div class="left-panel">
+            <img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                alt="Motorcycle Illustration">
+            <h2>Servis Motor Lebih Mudah</h2>
+            <p>Gabung dengan ribuan pemilik kendaraan yang telah mempercayakan perawatan mereka kepada Fixit.</p>
+        </div>
+
+        <div class="right-panel">
+            <div class="logo-section">
+                <i class="fa-solid fa-bicycle"></i> Fixit
+            </div>
+
+            <div class="form-header">
+                <h1>Buat Akun Baru</h1>
+                <p>Lengkapi data diri Anda untuk mulai menggunakan layanan kami.</p>
+            </div>
+
+            <form action="#" method="POST">
+
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-user icon-left"></i>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>No. Handphone</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-mobile-screen-button icon-left"></i>
+                            <input type="tel" class="form-control" placeholder="">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-envelope icon-left"></i>
+                            <input type="email" class="form-control" placeholder="">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock icon-left"></i>
+                        <input type="password" class="form-control" placeholder="">
+                        <i class="fa-regular fa-eye icon-right"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Konfirmasi Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-shield-halved icon-left"></i>
+                        <input type="password" class="form-control" placeholder="">
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terms">
+                    <label for="terms">
+                        Saya menyetujui <a href="#">Syarat & Ketentuan</a> serta <a href="#">Kebijakan Privasi</a> yang
+                        berlaku.
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    Daftar Sekarang <i class="fa-solid fa-arrow-right"></i>
+                </button>
+
+            </form>
+
+            <div class="form-footer">
+                Sudah punya akun? <a href="#">Login</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

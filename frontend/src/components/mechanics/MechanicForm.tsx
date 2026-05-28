@@ -15,9 +15,25 @@ interface MechanicFormProps {
   };
 }
 
+type FormState = 
+  | {
+      error: string;
+      success?: never;
+      accountInfo?: never;
+    }
+  | {
+      error?: never;
+      success: string;
+      accountInfo?: {
+        email: string;
+        password: string;
+      };
+    }
+  | null;
+
 export function MechanicForm({ mechanic }: MechanicFormProps) {
   const action = mechanic ? updateMechanic : createMechanic;
-  const [state, formAction] = useActionState(action, null);
+  const [state, formAction] = useActionState<FormState, FormData>(action, null);
   const router = useRouter();
 
   // Redirect after successful update
@@ -40,10 +56,22 @@ export function MechanicForm({ mechanic }: MechanicFormProps) {
       )}
 
       {state?.success && (
-        <div className="bg-green-50 text-green-600 p-3 rounded-md text-sm">
-          {state.success}
+        <div className="bg-green-50 text-green-600 p-4 rounded-md">
+          <div className="font-medium text-green-800 mb-2">{state.success}</div>
+          {state.accountInfo && (
+            <div className="bg-white p-3 rounded border border-green-200 mt-3">
+              <p className="text-sm font-medium text-gray-900 mb-2">📧 Informasi Akun Login:</p>
+              <div className="text-sm text-gray-700 space-y-1">
+                <p><span className="font-medium">Email:</span> {state.accountInfo.email}</p>
+                <p><span className="font-medium">Password:</span> {state.accountInfo.password}</p>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                ⚠️ Simpan informasi ini dan berikan ke mekanik untuk login pertama kali.
+              </p>
+            </div>
+          )}
           {mechanic && (
-            <div className="text-xs mt-1">
+            <div className="text-xs mt-2 text-green-700">
               Akan kembali ke daftar mekanik dalam 2 detik...
             </div>
           )}
@@ -68,6 +96,48 @@ export function MechanicForm({ mechanic }: MechanicFormProps) {
           placeholder="Contoh: Budi Santoso"
         />
       </div>
+
+      {!mechanic && (
+        <>
+          <div className="border-t pt-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Informasi Akun Login</h3>
+            <p className="text-xs text-gray-600 mb-3">
+              Akun ini akan digunakan mekanik untuk login dan melihat tiket mereka.
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email *
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="contoh@email.com"
+            />
+            <p className="text-xs text-gray-500 mt-1">Email untuk login mekanik</p>
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password *
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              minLength={6}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Minimal 6 karakter"
+            />
+            <p className="text-xs text-gray-500 mt-1">Password untuk login (minimal 6 karakter)</p>
+          </div>
+        </>
+      )}
 
       <div>
         <label htmlFor="is_active" className="block text-sm font-medium text-gray-700 mb-1">
