@@ -1,8 +1,9 @@
 'use client';
 
-import { useActionState, useState, useEffect } from 'react';
+import { useActionState, useState, useEffect, useCallback } from 'react';
 import { createBooking } from '@/lib/bookings/actions';
 import { localToUTC } from '@/lib/utils/datetime';
+import { validateIndonesianPlate } from '@/lib/utils/plate-validation';
 
 interface ServiceType {
   id: string;
@@ -36,6 +37,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [timeError, setTimeError] = useState('');
+  const [plateError, setPlateError] = useState('');
   const [slotStatus, setSlotStatus] = useState<{
     checking: boolean;
     available?: boolean;
@@ -45,7 +47,13 @@ export default function BookingFormClient({ services }: BookingFormProps) {
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [consultationText, setConsultationText] = useState('');
 
-  const validateOperationalHours = (time: string, date: string) => {
+  const estimatedDuration = selectedServices.length > 0
+    ? services
+        .filter(s => selectedServices.includes(s.id))
+        .reduce((sum, s) => sum + s.default_duration_minutes, 0)
+    : 60;
+
+  const validateOperationalHours = useCallback((time: string, date: string) => {
     if (!time) {
       setTimeError('');
       return true;
@@ -63,15 +71,51 @@ export default function BookingFormClient({ services }: BookingFormProps) {
 
     const [hours, minutes] = time.split(':').map(Number);
     const timeInMinutes = hours * 60 + minutes;
-    const startTime = 8 * 60;
-    const endTime = 17 * 60;
+    const startTime = 8 * 60; // 08:00
+    const endTime = 17 * 60; // 17:00
 
     if (timeInMinutes < startTime || timeInMinutes > endTime) {
       setTimeError('Jam operasional: 08:00 - 17:00 WIB');
       return false;
     }
 
+    // Check if service duration exceeds operational hours
+    if (estimatedDuration > 0) {
+      const endTimeMinutes = timeInMinutes + estimatedDuration;
+      if (endTimeMinutes > endTime) {
+        const exceedMinutes = endTimeMinutes - endTime;
+        const exceedHours = Math.floor(exceedMinutes / 60);
+        const exceedMins = exceedMinutes % 60;
+        setTimeError(
+          `Estimasi servis ${estimatedDuration} menit akan selesai pukul ${Math.floor(endTimeMinutes / 60)}:${String(endTimeMinutes % 60).padStart(2, '0')}, ` +
+          `melebihi jam operasional ${exceedHours > 0 ? exceedHours + ' jam ' : ''}${exceedMins} menit. ` +
+          `Silakan pilih waktu lebih awal atau booking untuk besok.`
+        );
+        return false;
+      }
+    }
+
     setTimeError('');
+    return true;
+  }, [estimatedDuration]);
+
+  const validatePlateNumber = (plate: string) => {
+    if (!plate) {
+      setPlateError('');
+      return true;
+    }
+
+    const result = validateIndonesianPlate(plate);
+    if (!result.isValid) {
+      setPlateError(result.error || 'Format plat nomor tidak valid');
+      return false;
+    }
+
+    setPlateError('');
+    // Auto-format plate number
+    if (result.formatted && result.formatted !== plate) {
+      setVehiclePlate(result.formatted);
+    }
     return true;
   };
 
@@ -89,11 +133,29 @@ export default function BookingFormClient({ services }: BookingFormProps) {
     }
   };
 
-  const estimatedDuration = selectedServices.length > 0
-    ? services
-        .filter(s => selectedServices.includes(s.id))
-        .reduce((sum, s) => sum + s.default_duration_minutes, 0)
-    : 60;
+  const handlePlateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const plate = e.target.value.toUpperCase();
+    setVehiclePlate(plate);
+    validatePlateNumber(plate);
+  };
+
+  const handleServiceToggle = (serviceId: string) => {
+    setSelectedServices(prev => {
+      const newServices = prev.includes(serviceId)
+        ? prev.filter(id => id !== serviceId)
+        : [...prev, serviceId];
+      
+      // Revalidate time after service selection changes (duration changes)
+      // Use setTimeout to avoid setState during render
+      if (selectedTime && selectedDate) {
+        setTimeout(() => {
+          validateOperationalHours(selectedTime, selectedDate);
+        }, 0);
+      }
+      
+      return newServices;
+    });
+  };
 
   const totalPrice = selectedServices.length > 0
     ? services
@@ -140,21 +202,13 @@ export default function BookingFormClient({ services }: BookingFormProps) {
     return () => clearTimeout(timer);
   }, [selectedDate, selectedTime, estimatedDuration]);
 
-  const handleServiceToggle = (serviceId: string) => {
-    setSelectedServices(prev =>
-      prev.includes(serviceId)
-        ? prev.filter(id => id !== serviceId)
-        : [...prev, serviceId]
-    );
-  };
-
   const getServiceIcon = (serviceName: string) => {
     return serviceIcons[serviceName] || 'fa-wrench';
   };
 
   return (
     <div className="flex gap-8 items-start">
-      <form action={formAction} className="flex-1 space-y-8">
+      <form id="booking-form" action={formAction} className="flex-1 space-y-8">
         {state?.error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm">
             {state.error}
@@ -194,10 +248,16 @@ export default function BookingFormClient({ services }: BookingFormProps) {
                 name="vehicle_plate"
                 required
                 value={vehiclePlate}
-                onChange={(e) => setVehiclePlate(e.target.value)}
+                onChange={handlePlateChange}
                 placeholder="L 1234 AB"
-                className="w-full px-4 py-3 bg-gray-100 border-none rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className={`w-full px-4 py-3 bg-gray-100 border-none rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                  plateError ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'
+                }`}
               />
+              {plateError && (
+                <p className="text-xs text-red-600 mt-2">{plateError}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">Contoh: L 1234 AB, B 1234 ABC, AA 1234 AB</p>
             </div>
           </div>
         </div>
@@ -330,6 +390,17 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             className="w-full px-5 py-4 bg-white border-none rounded-2xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
           />
         </div>
+
+        {/* Tombol Batal di dalam form untuk mobile */}
+        <div className="lg:hidden">
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="w-full px-4 py-3.5 bg-white text-gray-900 border-2 border-gray-900 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors"
+          >
+            Batal
+          </button>
+        </div>
       </form>
 
       <div className="w-[380px] sticky top-6 space-y-5">
@@ -399,7 +470,8 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </button>
             <button
               type="submit"
-              disabled={slotStatus.available === false || !!timeError}
+              form="booking-form"
+              disabled={slotStatus.available === false || !!timeError || !!plateError}
               className="flex-[2.5] px-4 py-3.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               Konfirmasi Pesanan

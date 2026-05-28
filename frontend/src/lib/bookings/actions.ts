@@ -7,6 +7,7 @@ import { localToUTC } from '../utils/datetime';
 import { checkSlotAvailability } from '../utils/slot-availability';
 import { logAuditActivity } from '@/lib/audit/actions';
 import { AUDIT_ACTIONS, AUDIT_ENTITIES } from '@/lib/audit/constants';
+import { validateIndonesianPlate } from '../utils/plate-validation';
 
 export async function createBooking(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
@@ -54,6 +55,12 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     return { error: 'Data motor wajib diisi lengkap' };
   }
 
+  // Validate Indonesian plate number format
+  const plateValidation = validateIndonesianPlate(vehiclePlate);
+  if (!plateValidation.isValid) {
+    return { error: `Format plat nomor tidak valid: ${plateValidation.error}` };
+  }
+
   // BR-11: Jika tidak ada servis dipilih, keluhan wajib diisi
   if (serviceIds.length === 0 && !consultationText) {
     return { error: 'Jika tidak memilih jenis servis, keluhan/konsultasi wajib diisi' };
@@ -73,6 +80,19 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
         0
       );
     }
+  }
+
+  // Validate that service doesn't exceed operational hours
+  const endTimeMinutes = timeInMinutes + estimatedDurationMinutes;
+  if (endTimeMinutes > endTime) {
+    const exceedMinutes = endTimeMinutes - endTime;
+    const exceedHours = Math.floor(exceedMinutes / 60);
+    const exceedMins = exceedMinutes % 60;
+    return { 
+      error: `Estimasi servis ${estimatedDurationMinutes} menit akan selesai pukul ${Math.floor(endTimeMinutes / 60)}:${String(endTimeMinutes % 60).padStart(2, '0')}, ` +
+             `melebihi jam operasional ${exceedHours > 0 ? exceedHours + ' jam ' : ''}${exceedMins} menit. ` +
+             `Silakan pilih waktu lebih awal atau booking untuk besok.`
+    };
   }
 
   // Calculate schedule_end
