@@ -73,8 +73,14 @@ export async function unassignMechanic(bookingId: string) {
     return { error: error.message };
   }
 
-  if (result?.error) {
-    return { error: result.error };
+  // Check if function returned an error
+  if (result && typeof result === 'object') {
+    if ('error' in result && result.error) {
+      return { error: result.error as string };
+    }
+    if ('success' in result && result.success === false && 'error' in result) {
+      return { error: result.error as string };
+    }
   }
 
   // Revalidate all related paths

@@ -108,32 +108,35 @@ export async function calculateSLADelay(
     let actualEnd: string | null = null;
 
     if (progress?.end_time) {
-      // Completed booking - calculate actual delay
+      // Completed booking - calculate actual delay (24-hour basis)
       actualEnd = progress.end_time;
       if (actualEnd) {
         const actualEndTime = new Date(actualEnd);
+        // Calculate delay in minutes (includes all hours, not just working hours)
         delayMinutes = Math.max(0, Math.round((actualEndTime.getTime() - estimatedEnd.getTime()) / (1000 * 60)));
         isLate = delayMinutes > slaToleranceMinutes;
       }
     } else if (booking.status === 'in_progress' && progress?.start_time) {
-      // In progress - check if at risk of being late
+      // In progress - check if at risk of being late (24-hour basis)
       const now = new Date();
       const startTime = new Date(progress.start_time);
+      // Calculate elapsed time including all hours (24/7)
       const elapsedMinutes = Math.round((now.getTime() - startTime.getTime()) / (1000 * 60));
       const remainingMinutes = estimatedDurationMinutes - elapsedMinutes;
       
       // At risk if less than 15 minutes remaining and not finished
       isAtRisk = remainingMinutes <= 15 && remainingMinutes > 0;
       
-      // Calculate potential delay if continues at current pace
+      // Calculate potential delay if continues at current pace (24-hour basis)
       if (elapsedMinutes > estimatedDurationMinutes) {
         delayMinutes = elapsedMinutes - estimatedDurationMinutes;
         isLate = delayMinutes > slaToleranceMinutes;
       }
     } else if (booking.status === 'queued') {
-      // Queued - check if already past scheduled time
+      // Queued - check if already past scheduled time (24-hour basis)
       const now = new Date();
       if (now > estimatedEnd) {
+        // Calculate delay including all hours (not just working hours)
         delayMinutes = Math.round((now.getTime() - estimatedEnd.getTime()) / (1000 * 60));
         isAtRisk = true;
       }
@@ -249,17 +252,20 @@ export async function getBookingSLAStatus(bookingId: string): Promise<SLAStatus 
     actualEnd = progress.end_time;
     if (actualEnd) {
       const actualEndTime = new Date(actualEnd);
+      // Calculate delay in minutes (24-hour basis, includes all hours)
       delayMinutes = Math.max(0, Math.round((actualEndTime.getTime() - estimatedEnd.getTime()) / (1000 * 60)));
       isLate = delayMinutes > 30; // 30 minutes tolerance
     }
   } else if (booking.status === 'in_progress' && progress?.start_time) {
     const now = new Date();
     const startTime = new Date(progress.start_time);
+    // Calculate elapsed time including all hours (24/7, not just working hours)
     const elapsedMinutes = Math.round((now.getTime() - startTime.getTime()) / (1000 * 60));
     const remainingMinutes = estimatedDurationMinutes - elapsedMinutes;
     
     isAtRisk = remainingMinutes <= 15 && remainingMinutes > 0;
     
+    // Calculate delay if service is taking longer than estimated (24-hour basis)
     if (elapsedMinutes > estimatedDurationMinutes) {
       delayMinutes = elapsedMinutes - estimatedDurationMinutes;
       isLate = delayMinutes > 30;

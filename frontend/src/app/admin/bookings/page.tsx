@@ -49,7 +49,12 @@ export default async function AdminBookingsPage({
 
   // Apply filters
   if (params.status) {
-    query = query.eq('status', params.status);
+    // Special handling for "unassigned" filter
+    if (params.status === 'unassigned') {
+      query = query.eq('status', 'pending');
+    } else {
+      query = query.eq('status', params.status);
+    }
   }
 
   if (params.search) {
@@ -70,6 +75,19 @@ export default async function AdminBookingsPage({
 
   // Filter by mechanic on client side (because of nested relation)
   let filteredBookings = bookings || [];
+  
+  // Filter unassigned bookings if requested
+  if (params.status === 'unassigned') {
+    filteredBookings = filteredBookings.filter((booking) => {
+      const hasAssignment = booking.assignments && (
+        Array.isArray(booking.assignments) 
+          ? booking.assignments.length > 0 
+          : !!booking.assignments
+      );
+      return !hasAssignment && booking.status === 'pending';
+    });
+  }
+  
   if (params.mechanicId) {
     filteredBookings = filteredBookings.filter((booking) => {
       const assignment = Array.isArray(booking.assignments) 
@@ -78,6 +96,43 @@ export default async function AdminBookingsPage({
       return assignment?.mechanic?.id === params.mechanicId;
     });
   }
+  
+  // Sort unassigned bookings by created_at (oldest first = highest priority)
+  if (params.status === 'unassigned') {
+    filteredBookings.sort((a, b) => {
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    });
+  }
+  
+  // Helper function to calculate wait time in minutes
+  const getWaitTimeMinutes = (createdAt: string) => {
+    const now = new Date();
+    const created = new Date(createdAt);
+    return Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
+  };
+  
+  // Helper function to get priority badge
+  const getPriorityBadge = (booking: typeof filteredBookings[0]) => {
+    const hasAssignment = booking.assignments && (
+      Array.isArray(booking.assignments) 
+        ? booking.assignments.length > 0 
+        : !!booking.assignments
+    );
+    
+    if (hasAssignment || booking.status !== 'pending') return null;
+    
+    const waitMinutes = getWaitTimeMinutes(booking.created_at);
+    
+    if (waitMinutes > 30) {
+      return { color: 'bg-red-100 text-red-800 border-red-300', label: `🔴 ${waitMinutes} menit`, priority: 'high' };
+    } else if (waitMinutes > 15) {
+      return { color: 'bg-yellow-100 text-yellow-800 border-yellow-300', label: `⚠️ ${waitMinutes} menit`, priority: 'medium' };
+    } else if (waitMinutes > 0) {
+      return { color: 'bg-blue-100 text-blue-800 border-blue-300', label: `${waitMinutes} menit`, priority: 'low' };
+    }
+    
+    return null;
+  };
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
@@ -122,6 +177,9 @@ export default async function AdminBookingsPage({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Prioritas
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Customer
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -142,46 +200,58 @@ export default async function AdminBookingsPage({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredBookings.map((booking) => (
-                <tr key={booking.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {booking.customer?.name}
-                    </div>
-                    <div className="text-sm text-gray-500">{booking.customer?.email}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{booking.vehicle_type}</div>
-                    <div className="text-sm text-gray-500">{booking.vehicle_plate}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {formatDateWIB(booking.schedule_start).split(',')[0]}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {formatTimeWIB(booking.schedule_start)} WIB
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(booking.status)}`}>
-                      {getStatusLabel(booking.status)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {booking.assignments && (Array.isArray(booking.assignments) 
-                      ? (booking.assignments.length > 0 && booking.assignments[0].mechanic?.name)
-                      : booking.assignments.mechanic?.name) || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <Link
-                      href={`/admin/bookings/${booking.id}`}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Detail
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {filteredBookings.map((booking) => {
+                const priorityBadge = getPriorityBadge(booking);
+                return (
+                  <tr key={booking.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {priorityBadge ? (
+                        <span className={`px-2 py-1 text-xs rounded-full border ${priorityBadge.color}`}>
+                          {priorityBadge.label}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {booking.customer?.name}
+                      </div>
+                      <div className="text-sm text-gray-500">{booking.customer?.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{booking.vehicle_type}</div>
+                      <div className="text-sm text-gray-500">{booking.vehicle_plate}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {formatDateWIB(booking.schedule_start).split(',')[0]}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {formatTimeWIB(booking.schedule_start)} WIB
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(booking.status)}`}>
+                        {getStatusLabel(booking.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {booking.assignments && (Array.isArray(booking.assignments) 
+                        ? (booking.assignments.length > 0 && booking.assignments[0].mechanic?.name)
+                        : booking.assignments.mechanic?.name) || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <Link
+                        href={`/admin/bookings/${booking.id}`}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Detail
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

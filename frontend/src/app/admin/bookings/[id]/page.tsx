@@ -70,6 +70,10 @@ export default async function AdminBookingDetailPage({
 
   const isAssigned = booking.assignments && (Array.isArray(booking.assignments) ? booking.assignments.length > 0 : !!booking.assignments);
   const assignment = Array.isArray(booking.assignments) ? booking.assignments[0] : booking.assignments;
+  
+  // Check if booking is done
+  const serviceProgress = Array.isArray(booking.service_progress) ? booking.service_progress[0] : booking.service_progress;
+  const isDone = booking.status === 'done' || serviceProgress?.status === 'done';
 
   // Get SLA status for this booking
   const slaStatus = await getBookingSLAStatus(id);
@@ -221,7 +225,43 @@ export default async function AdminBookingDetailPage({
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-lg font-semibold mb-4">Assignment Mekanik</h2>
             
-            {isAssigned ? (
+            {isDone ? (
+              /* Tiket Selesai - Show completion info */
+              <div className="space-y-4">
+                <div className="bg-gray-50 border border-gray-300 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm font-medium text-gray-800">Tiket Selesai</p>
+                  </div>
+                  <p className="text-gray-900 font-semibold mb-1">
+                    Dikerjakan oleh: {assignment?.mechanic?.name || '-'}
+                  </p>
+                  {serviceProgress?.start_time && (
+                    <p className="text-sm text-gray-600">
+                      Mulai: {formatTimeWIB(serviceProgress.start_time)} WIB
+                    </p>
+                  )}
+                  {serviceProgress?.end_time && (
+                    <p className="text-sm text-gray-600">
+                      Selesai: {formatTimeWIB(serviceProgress.end_time)} WIB
+                    </p>
+                  )}
+                  {serviceProgress?.actual_duration && (
+                    <p className="text-sm text-gray-600 mt-2">
+                      Durasi: {serviceProgress.actual_duration} menit
+                    </p>
+                  )}
+                </div>
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                  <p className="text-xs text-blue-800">
+                    ℹ️ Tiket yang sudah selesai tidak dapat di-assign ulang
+                  </p>
+                </div>
+              </div>
+            ) : isAssigned ? (
+              /* Already Assigned - Show reassign form */
               <div className="space-y-4">
                 <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
                   <p className="text-sm text-green-800 font-medium mb-2">Sudah Di-assign</p>
@@ -238,6 +278,7 @@ export default async function AdminBookingDetailPage({
                 />
               </div>
             ) : (
+              /* Not Assigned - Show assign form */
               <div className="space-y-4">
                 <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
                   <p className="text-sm text-yellow-800">

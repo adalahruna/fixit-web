@@ -21,6 +21,7 @@ export default function BookingFilters({ showMechanicFilter = false, mechanics =
   const statusOptions = [
     { value: '', label: 'Semua Status' },
     { value: 'pending', label: 'Menunggu' },
+    { value: 'unassigned', label: '🔴 Belum Di-assign' },
     { value: 'confirmed', label: 'Dikonfirmasi' },
     { value: 'queued', label: 'Dalam Antrian' },
     { value: 'in_progress', label: 'Sedang Dikerjakan' },
