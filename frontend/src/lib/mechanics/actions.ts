@@ -2,6 +2,8 @@
 
 import { createClient } from '../supabase/server';
 import { revalidateMechanicPaths } from '../utils/revalidation';
+import { logAuditActivity } from '../audit/actions';
+import { AUDIT_ACTIONS, AUDIT_ENTITIES } from '../audit/constants';
 
 export async function createMechanic(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
@@ -87,7 +89,7 @@ export async function createMechanic(_prevState: unknown, formData: FormData) {
     }
 
     // 7. Create mechanic record linked to user (using admin client)
-    const { error: mechanicError } = await adminSupabase
+    const { error: mechanicError, data: mechanicData } = await adminSupabase
       .from('mechanics')
       .insert({
         name,
@@ -95,13 +97,33 @@ export async function createMechanic(_prevState: unknown, formData: FormData) {
         daily_capacity_minutes,
         skill_notes,
         user_id: authData.user.id // Link to user
-      });
+      })
+      .select()
+      .single();
 
     if (mechanicError) {
       console.error('Mechanic error:', mechanicError);
       // Cleanup: delete user if mechanic creation fails
       await adminSupabase.from('users').delete().eq('id', authData.user.id);
       return { error: `Gagal menyimpan data mekanik: ${mechanicError.message}` };
+    }
+
+    // Log audit activity (non-blocking)
+    try {
+      await logAuditActivity(
+        AUDIT_ACTIONS.CREATE_MECHANIC,
+        AUDIT_ENTITIES.MECHANIC,
+        mechanicData.id,
+        {
+          name,
+          is_active,
+          daily_capacity_minutes,
+          user_id: authData.user.id
+        }
+      );
+    } catch (auditError) {
+      // Silent fail - audit logging shouldn't block mechanic creation
+      console.error('Audit logging failed:', auditError);
     }
 
     revalidateMechanicPaths();
@@ -206,6 +228,25 @@ export async function updateMechanic(_prevState: unknown, formData: FormData) {
       }
     }
 
+    // Log audit activity after successful update (non-blocking)
+    try {
+      await logAuditActivity(
+        AUDIT_ACTIONS.UPDATE_MECHANIC,
+        AUDIT_ENTITIES.MECHANIC,
+        id,
+        {
+          name: data.name,
+          is_active: data.is_active,
+          daily_capacity_minutes: data.daily_capacity_minutes,
+          skill_notes: data.skill_notes,
+          user_id: currentMechanic.user_id
+        }
+      );
+    } catch (auditError) {
+      // Silent fail - audit logging shouldn't block mechanic update
+      console.error('Audit logging failed:', auditError);
+    }
+
     revalidateMechanicPaths();
     
     // Return success message instead of redirecting immediately
@@ -214,6 +255,92 @@ export async function updateMechanic(_prevState: unknown, formData: FormData) {
   } catch (error) {
     console.error('Error updating mechanic:', error);
     return { error: 'Terjadi kesalahan saat mengupdate data mekanik' };
+  }
+}
+
+/**
+ * Delete mechanic
+ */
+export async function deleteMechanic(id: string) {
+  const supabase = await createClient();
+
+  try {
+    // Check if mechanic has active or pending assignments
+    const { data: assignments, error: checkError } = await supabase
+      .from('assignments')
+      .select(`
+        id,
+        booking:bookings!inner(status)
+      `)
+      .eq('mechanic_id', id)
+      .in('booking.status', ['pending', 'confirmed', 'queued', 'in_progress'])
+      .limit(1);
+
+    if (checkError) {
+      return { error: checkError.message };
+    }
+
+    if (assignments && assignments.length > 0) {
+      return { error: 'Tidak dapat menghapus mekanik yang memiliki assignment aktif atau pending' };
+    }
+
+    // Get mechanic data to check for user_id
+    const { data: mechanic } = await supabase
+      .from('mechanics')
+      .select('user_id, name, is_active, daily_capacity_minutes')
+      .eq('id', id)
+      .single();
+
+    // Delete mechanic
+    const { error: deleteError } = await supabase
+      .from('mechanics')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      return { error: deleteError.message };
+    }
+
+    // Log audit activity (non-blocking)
+    if (mechanic) {
+      try {
+        await logAuditActivity(
+          AUDIT_ACTIONS.DELETE_MECHANIC,
+          AUDIT_ENTITIES.MECHANIC,
+          id,
+          {
+            name: mechanic.name,
+            is_active: mechanic.is_active,
+            daily_capacity_minutes: mechanic.daily_capacity_minutes,
+            user_id: mechanic.user_id
+          }
+        );
+      } catch (auditError) {
+        // Silent fail - audit logging shouldn't block mechanic deletion
+        console.error('Audit logging failed:', auditError);
+      }
+    }
+
+    // If mechanic has linked user, optionally delete the user account too
+    // (This is optional - you might want to keep the user account)
+    if (mechanic?.user_id) {
+      // Delete user account
+      const { error: userDeleteError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', mechanic.user_id);
+
+      if (userDeleteError) {
+        console.error('Failed to delete linked user:', userDeleteError);
+        // Don't fail the operation, mechanic is already deleted
+      }
+    }
+
+    revalidateMechanicPaths();
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting mechanic:', error);
+    return { error: 'Terjadi kesalahan saat menghapus mekanik' };
   }
 }
 

@@ -29,6 +29,117 @@ interface BookingData {
   service_progress: ServiceProgress[] | ServiceProgress | null;
 }
 
+/**
+ * Helper function to calculate real mechanic performance metrics
+ * Queries all active mechanics and their completed bookings to calculate:
+ * - Completed jobs count
+ * - Average service time from service_progress
+ * - On-time rate based on scheduled vs actual duration
+ * 
+ * Includes mechanics with zero completed jobs (showing zero metrics)
+ * 
+ * @param startDate - Start of date range
+ * @param endDate - End of date range
+ * @returns Array of mechanic performance data
+ */
+async function getMechanicPerformance(
+  startDate: Date,
+  endDate: Date
+): Promise<Array<{ name: string; completedJobs: number; avgTime: number; onTimeRate: number }>> {
+  const supabase = await createClient();
+
+  // 1. Get all active mechanics
+  const { data: mechanics } = await supabase
+    .from('mechanics')
+    .select('id, name')
+    .eq('is_active', true);
+
+  if (!mechanics || mechanics.length === 0) {
+    return [];
+  }
+
+  const performance = [];
+
+  // 2. For each mechanic, calculate real metrics
+  for (const mechanic of mechanics) {
+    // 3. Get completed bookings assigned to this mechanic
+    const { data: assignments } = await supabase
+      .from('assignments')
+      .select(`
+        booking:bookings!inner(
+          id,
+          schedule_start,
+          schedule_end,
+          status,
+          service_progress(
+            actual_duration,
+            start_time,
+            end_time
+          )
+        )
+      `)
+      .eq('mechanic_id', mechanic.id)
+      .eq('booking.status', 'done')
+      .gte('booking.schedule_start', startDate.toISOString())
+      .lte('booking.schedule_start', endDate.toISOString()) as {
+        data: Array<{
+          booking: {
+            id: string;
+            schedule_start: string;
+            schedule_end: string;
+            status: string;
+            service_progress: ServiceProgress[] | ServiceProgress | null;
+          };
+        }> | null;
+      };
+
+    const completedJobs = assignments?.length || 0;
+
+    // 4. Calculate average service time from actual_duration
+    const totalTime = assignments?.reduce((sum, a) => {
+      const progress = Array.isArray(a.booking.service_progress)
+        ? a.booking.service_progress[0]
+        : a.booking.service_progress;
+      return sum + (progress?.actual_duration || 0);
+    }, 0) || 0;
+
+    const avgTime = completedJobs > 0 
+      ? Math.round(totalTime / completedJobs) 
+      : 0;
+
+    // 5. Calculate on-time rate (scheduled duration vs actual duration)
+    const onTimeJobs = assignments?.filter(a => {
+      const progress = Array.isArray(a.booking.service_progress)
+        ? a.booking.service_progress[0]
+        : a.booking.service_progress;
+      
+      if (!progress?.actual_duration) return false;
+      
+      const scheduledDuration = 
+        new Date(a.booking.schedule_end).getTime() - 
+        new Date(a.booking.schedule_start).getTime();
+      const actualDuration = progress.actual_duration * 60 * 1000; // convert minutes to milliseconds
+      
+      // On-time if actual duration is within scheduled duration + 30 min tolerance
+      return actualDuration <= scheduledDuration + (30 * 60 * 1000);
+    }).length || 0;
+
+    const onTimeRate = completedJobs > 0
+      ? Math.round((onTimeJobs / completedJobs) * 100)
+      : 0;
+
+    // 6. Add to performance array (include mechanics with zero completed jobs)
+    performance.push({
+      name: mechanic.name,
+      completedJobs,
+      avgTime,
+      onTimeRate
+    });
+  }
+
+  return performance;
+}
+
 export interface KPIMetrics {
   // Booking metrics
   totalBookings: number;
@@ -218,12 +329,8 @@ export async function calculateKPIMetrics(
     revenue: data.revenue
   }));
 
-  // Mechanic performance (mock data for now)
-  const mechanicPerformance = [
-    { name: 'Ahmad', completedJobs: 15, avgTime: 45, onTimeRate: 95 },
-    { name: 'Budi', completedJobs: 12, avgTime: 52, onTimeRate: 88 },
-    { name: 'Candra', completedJobs: 18, avgTime: 38, onTimeRate: 92 }
-  ];
+  // Mechanic performance (real data from database)
+  const mechanicPerformance = await getMechanicPerformance(start, end);
 
   // Hourly booking distribution
   const hourlyDistribution = new Map<number, number>();

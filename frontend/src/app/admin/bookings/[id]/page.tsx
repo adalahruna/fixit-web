@@ -115,7 +115,7 @@ export default async function AdminBookingDetailPage({
               <div className="flex justify-between items-start">
                 <div>
                   <h1 className="text-2xl font-bold mb-1">Detail Booking</h1>
-                  <p className="text-blue-100">ID: {booking.id.slice(0, 8)}</p>
+                  <p className="text-blue-50">ID: {booking.id.slice(0, 8)}</p>
                 </div>
                 <RealtimeBookingStatus
                   bookingId={booking.id}

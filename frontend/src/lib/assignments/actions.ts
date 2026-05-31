@@ -2,6 +2,8 @@
 
 import { createClient } from '../supabase/server';
 import { revalidateAssignmentPaths } from '../utils/revalidation';
+import { logAuditActivity } from '../audit/actions';
+import { AUDIT_ACTIONS, AUDIT_ENTITIES } from '../audit/constants';
 
 export async function assignMechanic(bookingId: string, mechanicId: string) {
   const supabase = await createClient();
@@ -38,6 +40,25 @@ export async function assignMechanic(bookingId: string, mechanicId: string) {
     return { error: result.error };
   }
 
+  // Get mechanic name for audit metadata
+  const { data: mechanic } = await supabase
+    .from('mechanics')
+    .select('name')
+    .eq('id', mechanicId)
+    .single();
+
+  // Log audit activity (non-blocking)
+  await logAuditActivity(
+    AUDIT_ACTIONS.ASSIGN_MECHANIC,
+    AUDIT_ENTITIES.ASSIGNMENT,
+    bookingId,
+    {
+      booking_id: bookingId,
+      mechanic_id: mechanicId,
+      mechanic_name: mechanic?.name || 'Unknown'
+    }
+  );
+
   // Revalidate all related paths
   revalidateAssignmentPaths(bookingId);
   return { success: true };
@@ -63,6 +84,13 @@ export async function unassignMechanic(bookingId: string) {
     return { error: 'Forbidden: Only admin/owner can unassign mechanics' };
   }
 
+  // Get assignment details before unassignment for audit logging
+  const { data: assignment } = await supabase
+    .from('assignments')
+    .select('mechanic_id')
+    .eq('booking_id', bookingId)
+    .single();
+
   // Use atomic database function for unassignment
   const { data: result, error } = await supabase
     .rpc('unassign_mechanic_atomic', {
@@ -82,6 +110,17 @@ export async function unassignMechanic(bookingId: string) {
       return { error: result.error as string };
     }
   }
+
+  // Log audit activity (non-blocking)
+  await logAuditActivity(
+    AUDIT_ACTIONS.UNASSIGN_MECHANIC,
+    AUDIT_ENTITIES.ASSIGNMENT,
+    bookingId,
+    {
+      booking_id: bookingId,
+      mechanic_id: assignment?.mechanic_id || 'Unknown'
+    }
+  );
 
   // Revalidate all related paths
   revalidateAssignmentPaths(bookingId);

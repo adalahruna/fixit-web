@@ -174,7 +174,7 @@ export default async function MechanicDashboard() {
       {queueCount > 0 && (
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-lg shadow text-white">
           <h3 className="text-lg font-semibold mb-2">Ada {queueCount} booking dalam antrian</h3>
-          <p className="text-blue-100 mb-4">Mulai kerjakan servis berikutnya</p>
+          <p className="text-blue-50 mb-4">Mulai kerjakan servis berikutnya</p>
           <Link
             href="/mechanic/queue"
             className="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"

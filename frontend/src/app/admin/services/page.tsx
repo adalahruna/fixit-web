@@ -1,6 +1,7 @@
 import { requireRole } from '@/lib/auth/utils';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import DeleteServiceButton from '@/components/services/DeleteServiceButton';
 
 export default async function ServicesPage() {
   await requireRole(['admin', 'owner']);
@@ -68,6 +69,10 @@ export default async function ServicesPage() {
                     >
                       Edit
                     </Link>
+                    <DeleteServiceButton
+                      serviceId={service.id}
+                      serviceName={service.name}
+                    />
                   </td>
                 </tr>
               ))}

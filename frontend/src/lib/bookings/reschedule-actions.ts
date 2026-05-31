@@ -4,6 +4,8 @@ import { createClient } from '../supabase/server';
 import { revalidateBookingPaths } from '../utils/revalidation';
 import { localToUTC } from '../utils/datetime';
 import { checkSlotAvailability } from '../utils/slot-availability';
+import { logAuditActivity } from '../audit/actions';
+import { AUDIT_ACTIONS, AUDIT_ENTITIES } from '../audit/constants';
 
 export async function rescheduleBooking(
   bookingId: string,
@@ -98,6 +100,24 @@ export async function rescheduleBooking(
 
   if (updateError) {
     return { error: updateError.message };
+  }
+
+  // Log audit activity (non-blocking)
+  try {
+    await logAuditActivity(
+      AUDIT_ACTIONS.RESCHEDULE_BOOKING,
+      AUDIT_ENTITIES.BOOKING,
+      bookingId,
+      {
+        original_schedule_start: booking.schedule_start,
+        original_schedule_end: booking.schedule_end,
+        new_schedule_start: newScheduleStart,
+        new_schedule_end: newScheduleEnd
+      }
+    );
+  } catch (auditError) {
+    // Log audit error but don't block the operation
+    console.error('Failed to log audit activity for reschedule:', auditError);
   }
 
   // Revalidate paths

@@ -55,9 +55,6 @@ export async function detectMechanicOverload(): Promise<OverloadDetectionResult>
   for (const mechanic of mechanics) {
     // Default capacity: 8 hours = 480 minutes per day
     const maxCapacityMinutes = mechanic.daily_capacity_minutes || 480;
-    
-    // Convert to approximate number of bookings (assuming 60 min average per booking)
-    const maxCapacity = Math.floor(maxCapacityMinutes / 60);
 
     // Count current bookings (queued + in_progress) for today
     const today = new Date();
@@ -92,7 +89,7 @@ export async function detectMechanicOverload(): Promise<OverloadDetectionResult>
     const queuedBookings = bookings.filter((b: BookingData) => b.status === 'queued').length;
     const inProgressBookings = bookings.filter((b: BookingData) => b.status === 'in_progress').length;
     
-    // Calculate total workload in minutes
+    // Calculate total workload in minutes by summing service durations
     let totalWorkloadMinutes = 0;
     for (const booking of bookings) {
       if (booking.booking_services && Array.isArray(booking.booking_services)) {
@@ -103,15 +100,14 @@ export async function detectMechanicOverload(): Promise<OverloadDetectionResult>
       }
     }
 
-    const currentLoad = queuedBookings + inProgressBookings;
     const workloadPercentage = (totalWorkloadMinutes / maxCapacityMinutes) * 100;
     const isOverloaded = workloadPercentage >= 80; // 80% threshold
 
     overloadStatuses.push({
       mechanicId: mechanic.id,
       mechanicName: mechanic.name,
-      currentLoad,
-      maxCapacity,
+      currentLoad: totalWorkloadMinutes, // Total workload in minutes, not booking count
+      maxCapacity: maxCapacityMinutes, // Capacity in minutes, not booking count
       isOverloaded,
       overloadPercentage: Math.round(workloadPercentage),
       queuedBookings,
@@ -134,84 +130,97 @@ export async function detectMechanicOverload(): Promise<OverloadDetectionResult>
 
 /**
  * Get overload status for specific mechanic
+ * Returns status regardless of whether mechanic is overloaded or not
  */
 export async function getMechanicOverloadStatus(mechanicId: string): Promise<OverloadStatus | null> {
-  const result = await detectMechanicOverload();
-  // Return status for the mechanic regardless of overload state
-  const allStatuses = [...result.overloadedMechanics];
+  const supabase = await createClient();
   
-  // If not in overloaded list, we need to get all mechanics status
-  let mechanicStatus = allStatuses.find(m => m.mechanicId === mechanicId);
-  
-  if (!mechanicStatus) {
-    // Re-run detection to get all mechanics, not just overloaded ones
-    const supabase = await createClient();
-    const { data: mechanic } = await supabase
-      .from('mechanics')
-      .select('id, name, daily_capacity_minutes, is_active')
-      .eq('id', mechanicId)
-      .eq('is_active', true)
-      .single();
-      
-    if (!mechanic) return null;
+  // Query specific mechanic's data directly
+  const { data: mechanic, error: mechanicError } = await supabase
+    .from('mechanics')
+    .select('id, name, daily_capacity_minutes, is_active')
+    .eq('id', mechanicId)
+    .eq('is_active', true)
+    .single();
     
-    // Calculate status for this specific mechanic
-    const maxCapacityMinutes = mechanic.daily_capacity_minutes || 480;
-    const maxCapacity = Math.floor(maxCapacityMinutes / 60);
-    
-    const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setDate(endOfDay.getDate() + 1);
-
-    const { data: assignments } = await supabase
-      .from('assignments')
-      .select(`
-        booking:bookings!inner(
-          id,
-          schedule_start,
-          status,
-          booking_services(
-            duration_minutes
-          )
-        )
-      `)
-      .eq('mechanic_id', mechanic.id)
-      .gte('booking.schedule_start', startOfDay.toISOString())
-      .lt('booking.schedule_start', endOfDay.toISOString())
-      .in('booking.status', ['queued', 'in_progress']);
-
-    const bookings = (assignments as unknown as AssignmentData[])?.map(a => a.booking) || [];
-    const queuedBookings = bookings.filter((b: BookingData) => b.status === 'queued').length;
-    const inProgressBookings = bookings.filter((b: BookingData) => b.status === 'in_progress').length;
-    
-    let totalWorkloadMinutes = 0;
-    for (const booking of bookings) {
-      if (booking.booking_services && Array.isArray(booking.booking_services)) {
-        const bookingDuration = booking.booking_services.reduce((sum: number, bs: { duration_minutes: number }) => sum + (bs.duration_minutes || 60), 0);
-        totalWorkloadMinutes += bookingDuration;
-      } else {
-        totalWorkloadMinutes += 60;
-      }
-    }
-
-    const currentLoad = queuedBookings + inProgressBookings;
-    const workloadPercentage = (totalWorkloadMinutes / maxCapacityMinutes) * 100;
-    const isOverloaded = workloadPercentage >= 80;
-
-    mechanicStatus = {
-      mechanicId: mechanic.id,
-      mechanicName: mechanic.name,
-      currentLoad,
-      maxCapacity,
-      isOverloaded,
-      overloadPercentage: Math.round(workloadPercentage),
-      queuedBookings,
-      inProgressBookings
-    };
+  if (mechanicError || !mechanic) {
+    return null;
   }
   
-  return mechanicStatus;
+  // Default capacity: 8 hours = 480 minutes per day
+  const maxCapacityMinutes = mechanic.daily_capacity_minutes || 480;
+  
+  // Calculate today's date range
+  const today = new Date();
+  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const endOfDay = new Date(startOfDay);
+  endOfDay.setDate(endOfDay.getDate() + 1);
+
+  // Get today's assignments for this specific mechanic
+  const { data: assignments, error: assignmentsError } = await supabase
+    .from('assignments')
+    .select(`
+      booking:bookings!inner(
+        id,
+        schedule_start,
+        status,
+        booking_services(
+          duration_minutes
+        )
+      )
+    `)
+    .eq('mechanic_id', mechanic.id)
+    .gte('booking.schedule_start', startOfDay.toISOString())
+    .lt('booking.schedule_start', endOfDay.toISOString())
+    .in('booking.status', ['queued', 'in_progress']);
+
+  if (assignmentsError) {
+    console.error(`Error fetching assignments for mechanic ${mechanic.id}:`, assignmentsError);
+    // Return status with zero workload on error
+    return {
+      mechanicId: mechanic.id,
+      mechanicName: mechanic.name,
+      currentLoad: 0,
+      maxCapacity: maxCapacityMinutes,
+      isOverloaded: false,
+      overloadPercentage: 0,
+      queuedBookings: 0,
+      inProgressBookings: 0
+    };
+  }
+
+  const bookings = (assignments as unknown as AssignmentData[])?.map(a => a.booking) || [];
+  const queuedBookings = bookings.filter((b: BookingData) => b.status === 'queued').length;
+  const inProgressBookings = bookings.filter((b: BookingData) => b.status === 'in_progress').length;
+  
+  // Calculate total workload in minutes by summing service durations
+  let totalWorkloadMinutes = 0;
+  for (const booking of bookings) {
+    if (booking.booking_services && Array.isArray(booking.booking_services)) {
+      const bookingDuration = booking.booking_services.reduce(
+        (sum: number, bs: { duration_minutes: number }) => sum + (bs.duration_minutes || 60), 
+        0
+      );
+      totalWorkloadMinutes += bookingDuration;
+    } else {
+      // Default 1 hour if no services data
+      totalWorkloadMinutes += 60;
+    }
+  }
+
+  const workloadPercentage = (totalWorkloadMinutes / maxCapacityMinutes) * 100;
+  const isOverloaded = workloadPercentage >= 80; // 80% threshold
+
+  return {
+    mechanicId: mechanic.id,
+    mechanicName: mechanic.name,
+    currentLoad: totalWorkloadMinutes,
+    maxCapacity: maxCapacityMinutes,
+    isOverloaded,
+    overloadPercentage: Math.round(workloadPercentage),
+    queuedBookings,
+    inProgressBookings
+  };
 }
 
 /**

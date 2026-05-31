@@ -45,17 +45,17 @@ export default function CancelButton({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full sm:w-auto">
       <button
         onClick={() => setIsOpen(true)}
         disabled={!canCancel || !isCancellableStatus}
-        className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
+        className={`w-full sm:w-auto px-6 py-3 rounded-lg font-bold text-sm transition-all ${
           (canCancel && isCancellableStatus)
-            ? 'bg-red-600 text-white hover:bg-red-700'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            ? 'bg-red-600 text-white hover:bg-red-700 shadow-md hover:shadow-lg'
+            : 'bg-gray-300 text-gray-600 cursor-not-allowed'
         }`}
       >
-        {!isCancellableStatus ? `Status ${status} tidak bisa dibatalkan` :
+        {!isCancellableStatus ? `Tidak Bisa Dibatalkan (${status})` :
          !canCancel ? 'Tidak Bisa Dibatalkan (H-1)' : 
          'Batalkan Booking'}
       </button>

@@ -115,8 +115,8 @@ export default async function OwnerDashboard() {
           className="bg-gradient-to-r from-purple-500 to-purple-600 p-6 rounded-lg shadow text-white hover:shadow-lg transition-shadow"
         >
           <h3 className="text-lg font-semibold mb-2">📊 Analisis Performa</h3>
-          <p className="text-purple-100 mb-4">Lihat KPI dan metrics bisnis detail</p>
-          <div className="flex items-center text-purple-100">
+          <p className="text-purple-50 mb-4">Lihat KPI dan metrics bisnis detail</p>
+          <div className="flex items-center text-white">
             <span className="mr-2">Lihat Dashboard</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -129,8 +129,8 @@ export default async function OwnerDashboard() {
           className="bg-gradient-to-r from-red-500 to-red-600 p-6 rounded-lg shadow text-white hover:shadow-lg transition-shadow"
         >
           <h3 className="text-lg font-semibold mb-2">⏱️ Monitor SLA</h3>
-          <p className="text-red-100 mb-4">Pantau performa dan beban kerja</p>
-          <div className="flex items-center text-red-100">
+          <p className="text-red-50 mb-4">Pantau performa dan beban kerja</p>
+          <div className="flex items-center text-white">
             <span className="mr-2">Lihat SLA</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

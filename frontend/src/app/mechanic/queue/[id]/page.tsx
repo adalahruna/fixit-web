@@ -119,7 +119,7 @@ export default async function MechanicBookingDetailPage({
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-2xl font-bold mb-1">Detail Booking</h1>
-              <p className="text-purple-100">Queue Position: #{assignment.queue_position}</p>
+              <p className="text-purple-50">Queue Position: #{assignment.queue_position}</p>
             </div>
             {progress && (
               <span className={`px-4 py-2 text-sm font-medium rounded-full ${getStatusBadge(progress.status)} text-gray-800`}>

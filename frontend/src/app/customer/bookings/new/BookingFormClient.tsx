@@ -409,7 +409,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
 
           <div className="space-y-4">
             <div>
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
                 Layanan Terpilih
               </div>
               <div className="flex justify-between text-sm font-semibold">
@@ -421,7 +421,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </div>
 
             <div>
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
                 Keluhan / Konsultasi
               </div>
               <div className="flex justify-between text-sm font-semibold">
@@ -431,7 +431,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </div>
 
             <div>
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
                 Tanggal & Waktu
               </div>
               <div className="text-sm font-semibold flex items-center gap-2">
@@ -441,7 +441,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </div>
 
             <div>
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
                 Kendaraan
               </div>
               <div className="text-sm font-semibold flex items-center gap-2">
