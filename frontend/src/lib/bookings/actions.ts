@@ -25,6 +25,7 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
   const vehicleType = formData.get('vehicle_type') as string;
   const consultationText = formData.get('consultation_text') as string;
   const serviceIds = formData.getAll('service_ids') as string[];
+  const complaintPhotoBase64 = formData.get('complaint_photo') as string | null;
 
   // Validation
   if (!scheduledDate || !scheduledTime) {
@@ -105,6 +106,47 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     return { error: slotCheck.message || 'Slot tidak tersedia' };
   }
 
+  // Upload complaint photo if provided
+  let complaintPhotoUrl: string | null = null;
+  if (complaintPhotoBase64) {
+    try {
+      // Extract base64 data and convert to buffer
+      const base64Data = complaintPhotoBase64.split(',')[1];
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      // Determine file extension from base64 header
+      const mimeType = complaintPhotoBase64.split(';')[0].split(':')[1];
+      const fileExt = mimeType.split('/')[1];
+      
+      // Generate unique filename
+      const timestamp = Date.now();
+      const fileName = `${user.id}/${timestamp}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('complaint-photos')
+        .upload(fileName, buffer, {
+          contentType: mimeType,
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        return { error: 'Gagal mengupload foto. Silakan coba lagi' };
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('complaint-photos')
+        .getPublicUrl(uploadData.path);
+
+      complaintPhotoUrl = publicUrl;
+    } catch (error) {
+      console.error('Error processing photo:', error);
+      return { error: 'Gagal memproses foto. Silakan coba lagi' };
+    }
+  }
+
   // Create booking
   const bookingData = {
     customer_id: user.id,
@@ -113,6 +155,7 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
     status: 'pending',
     vehicle_plate: vehiclePlate,
     vehicle_type: vehicleType,
+    complaint_photo_url: complaintPhotoUrl,
   };
   
   const { data: booking, error: bookingError } = await supabase

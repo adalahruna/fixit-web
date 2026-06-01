@@ -46,6 +46,9 @@ export default function BookingFormClient({ services }: BookingFormProps) {
   const [vehicleType, setVehicleType] = useState('');
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [consultationText, setConsultationText] = useState('');
+  const [complaintPhoto, setComplaintPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState('');
 
   const estimatedDuration = selectedServices.length > 0
     ? services
@@ -204,6 +207,50 @@ export default function BookingFormClient({ services }: BookingFormProps) {
 
   const getServiceIcon = (serviceName: string) => {
     return serviceIcons[serviceName] || 'fa-wrench';
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setComplaintPhoto(null);
+      setPhotoPreview(null);
+      setPhotoError('');
+      return;
+    }
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setPhotoError('Format file tidak valid. Gunakan JPG, PNG, atau WebP');
+      setComplaintPhoto(null);
+      setPhotoPreview(null);
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setPhotoError('Ukuran file terlalu besar. Maksimal 5MB');
+      setComplaintPhoto(null);
+      setPhotoPreview(null);
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    setComplaintPhoto(file);
+    setPhotoError('');
+  };
+
+  const removePhoto = () => {
+    setComplaintPhoto(null);
+    setPhotoPreview(null);
+    setPhotoError('');
   };
 
   return (
@@ -389,6 +436,55 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             placeholder="Wajib diisi jika anda tidak memilih jenis servis"
             className="w-full px-5 py-4 bg-white border-none rounded-2xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
           />
+
+          {/* Photo Upload Section */}
+          <div className="mt-5">
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+              Foto Keluhan (Opsional)
+            </label>
+            
+            {!photoPreview ? (
+              <label className="flex flex-col items-center justify-center w-full h-40 bg-white border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-blue-600 hover:bg-blue-50 transition-colors">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <i className="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 mb-3" suppressHydrationWarning></i>
+                  <p className="mb-2 text-sm text-gray-600">
+                    <span className="font-semibold">Klik untuk upload</span> atau drag & drop
+                  </p>
+                  <p className="text-xs text-gray-500">PNG, JPG, atau WebP (Max. 5MB)</p>
+                </div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <div className="relative w-full h-64 bg-white rounded-2xl overflow-hidden shadow-sm">
+                <img
+                  src={photoPreview}
+                  alt="Preview foto keluhan"
+                  className="w-full h-full object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={removePhoto}
+                  className="absolute top-3 right-3 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 transition-colors shadow-lg"
+                >
+                  <i className="fa-solid fa-xmark" suppressHydrationWarning></i>
+                </button>
+              </div>
+            )}
+
+            {photoError && (
+              <p className="text-xs text-red-600 mt-2">{photoError}</p>
+            )}
+
+            {/* Hidden input to store base64 photo data */}
+            {photoPreview && (
+              <input type="hidden" name="complaint_photo" value={photoPreview} />
+            )}
+          </div>
         </div>
 
         {/* Tombol Batal di dalam form untuk mobile */}

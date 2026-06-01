@@ -278,23 +278,34 @@ export async function calculateKPIMetrics(
     ? Math.round((totalUsedMinutes / totalCapacityMinutes) * 100)
     : 0;
 
-  // Calculate revenue (placeholder - using service prices)
+  // Calculate revenue (REAL - only from completed bookings)
   let totalRevenue = 0;
   let totalBookingValue = 0;
   
   bookings?.forEach(booking => {
-    if (booking.booking_services && Array.isArray(booking.booking_services)) {
+    // Only count revenue from completed bookings (status = 'done')
+    if (booking.status === 'done' && booking.booking_services && Array.isArray(booking.booking_services)) {
       const bookingRevenue = booking.booking_services.reduce((sum, bs) => {
         const serviceType = bs.service_type;
+        // Treat NULL prices as 0
         return sum + (serviceType?.price || 0);
       }, 0);
       totalRevenue += bookingRevenue;
-      totalBookingValue += bookingRevenue;
+    }
+    
+    // For average booking value, include all non-cancelled bookings
+    if (booking.status !== 'cancelled' && booking.booking_services && Array.isArray(booking.booking_services)) {
+      const bookingValue = booking.booking_services.reduce((sum, bs) => {
+        const serviceType = bs.service_type;
+        return sum + (serviceType?.price || 0);
+      }, 0);
+      totalBookingValue += bookingValue;
     }
   });
 
-  const averageBookingValue = totalBookings > 0 
-    ? Math.round(totalBookingValue / totalBookings)
+  const nonCancelledBookings = totalBookings - cancelledBookings;
+  const averageBookingValue = nonCancelledBookings > 0 
+    ? Math.round(totalBookingValue / nonCancelledBookings)
     : 0;
 
   // Enhanced metrics calculations
@@ -374,9 +385,54 @@ export async function calculateKPIMetrics(
     });
   }
 
-  // Quality metrics
-  const rescheduleRate = 5; // Placeholder - would need reschedule tracking
-  const averageWaitTime = 30; // Placeholder - would calculate from booking to service start
+  // Quality metrics - REAL calculations
+  
+  // 1. Calculate REAL reschedule rate from audit_logs
+  const { data: rescheduleEvents } = await supabase
+    .from('audit_logs')
+    .select('id')
+    .eq('action', 'reschedule_booking')
+    .gte('timestamp_log', start.toISOString())
+    .lte('timestamp_log', endOfDay.toISOString());
+  
+  const rescheduledCount = rescheduleEvents?.length || 0;
+  const rescheduleRate = totalBookings > 0 
+    ? Math.round((rescheduledCount / totalBookings) * 100 * 10) / 10  // Round to 1 decimal
+    : 0;
+  
+  // 2. Calculate REAL average wait time (booking created_at to service start_time)
+  const bookingsWithWaitTime = bookings?.filter(b => {
+    if (b.status !== 'done') return false;
+    
+    const progress = Array.isArray(b.service_progress) 
+      ? b.service_progress[0] 
+      : b.service_progress;
+    
+    // Must have start_time and it must be after created_at
+    if (!progress?.start_time) return false;
+    
+    const createdAt = new Date(b.created_at);
+    const startTime = new Date(progress.start_time);
+    
+    return startTime > createdAt;
+  }) || [];
+  
+  const totalWaitMinutes = bookingsWithWaitTime.reduce((sum, booking) => {
+    const progress = Array.isArray(booking.service_progress) 
+      ? booking.service_progress[0] 
+      : booking.service_progress;
+    
+    const createdAt = new Date(booking.created_at);
+    const startTime = new Date(progress!.start_time!);
+    
+    // Calculate wait time in minutes
+    const waitMinutes = (startTime.getTime() - createdAt.getTime()) / (1000 * 60);
+    return sum + waitMinutes;
+  }, 0);
+  
+  const averageWaitTime = bookingsWithWaitTime.length > 0
+    ? Math.round(totalWaitMinutes / bookingsWithWaitTime.length * 10) / 10  // Round to 1 decimal
+    : 0;
 
   // Peak hours analysis
   const peakHours = hourlyBookingDistribution

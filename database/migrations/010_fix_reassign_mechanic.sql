@@ -30,14 +30,14 @@
       IF v_progress_status = 'in_progress' THEN
         RETURN json_build_object(
           'success', false,
-          'error', 'Tidak dapat reassign mekanik saat servis sedang dikerjakan'
+          'error', 'Tidak dapat mengganti mekanik saat servis sedang dikerjakan'
         );
       END IF;
       
       IF v_progress_status = 'done' THEN
         RETURN json_build_object(
           'success', false,
-          'error', 'Tidak dapat reassign mekanik karena tiket sudah selesai'
+          'error', 'Tidak dapat mengganti mekanik karena servis sudah selesai'
         );
       END IF;
       
@@ -51,8 +51,7 @@
       UPDATE assignments
       SET 
         mechanic_id = p_mechanic_id,
-        queue_position = v_next_position,
-        updated_at = NOW()
+        queue_position = v_next_position
       WHERE id = v_existing_assignment_id;
       
       -- Reorder queue positions for old mechanic (close the gap)

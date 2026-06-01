@@ -222,6 +222,24 @@ export default async function MechanicBookingDetailPage({
             </div>
           )}
 
+          {/* Foto Keluhan */}
+          {booking.complaint_photo_url && (
+            <div>
+              <h2 className="text-lg font-semibold mb-3 text-gray-900">📸 Foto Keluhan</h2>
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={booking.complaint_photo_url} 
+                  alt="Foto keluhan customer" 
+                  className="w-full max-w-2xl mx-auto object-contain"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Foto diupload oleh customer saat membuat booking
+              </p>
+            </div>
+          )}
+
           {/* Progress Info */}
           {progress && progress.start_time && (
             <div>

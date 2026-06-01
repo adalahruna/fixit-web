@@ -285,6 +285,23 @@ export default async function BookingDetailPage({
               </p>
             </div>
           )}
+
+          {/* Foto Keluhan */}
+          {booking.complaint_photo_url && (
+            <div className="mt-6">
+              <label className="block text-xs font-bold text-gray-900 uppercase tracking-widest mb-4">
+                📸 Foto Keluhan:
+              </label>
+              <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={booking.complaint_photo_url} 
+                  alt="Foto keluhan motor" 
+                  className="w-full max-w-2xl mx-auto object-contain"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Mechanic & Progress Info */}
