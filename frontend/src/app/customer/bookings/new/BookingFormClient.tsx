@@ -265,12 +265,12 @@ export default function BookingFormClient({ services }: BookingFormProps) {
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
             <i className="fa-solid fa-motorcycle text-blue-600 text-xl" suppressHydrationWarning></i>
-            <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wider">Detail Kendaraan</h2>
+            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Detail Kendaraan</h2>
           </div>
           
           <div className="grid grid-cols-2 gap-5">
             <div>
-              <label htmlFor="vehicle_type" className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+              <label htmlFor="vehicle_type" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
                 Merk & Model
               </label>
               <input
@@ -281,12 +281,12 @@ export default function BookingFormClient({ services }: BookingFormProps) {
                 value={vehicleType}
                 onChange={(e) => setVehicleType(e.target.value)}
                 placeholder="Honda Vario 150"
-                className="w-full px-4 py-3 bg-gray-100 border-none rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full px-4 py-3 bg-gray-100 border-none rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
 
             <div>
-              <label htmlFor="vehicle_plate" className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+              <label htmlFor="vehicle_plate" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
                 Nomor Polisi
               </label>
               <input
@@ -297,7 +297,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
                 value={vehiclePlate}
                 onChange={handlePlateChange}
                 placeholder="L 1234 AB"
-                className={`w-full px-4 py-3 bg-gray-100 border-none rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                className={`w-full px-4 py-3 bg-gray-100 border-none rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 ${
                   plateError ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'
                 }`}
               />
@@ -312,7 +312,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
         <div>
           <div className="flex items-center gap-3 mb-5">
             <i className="fa-solid fa-screwdriver-wrench text-blue-600 text-xl" suppressHydrationWarning></i>
-            <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wider">Jenis Servis</h2>
+            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Jenis Servis</h2>
           </div>
           
           <div className="grid grid-cols-3 gap-5">
@@ -338,12 +338,12 @@ export default function BookingFormClient({ services }: BookingFormProps) {
                   }`}>
                     <i className={`fa-solid ${getServiceIcon(service.name)} text-lg`} suppressHydrationWarning></i>
                   </div>
-                  <h3 className="text-base font-bold mb-2">{service.name}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed mb-5 min-h-[40px]">
+                  <h3 className="text-base font-bold text-gray-900 mb-2">{service.name}</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed mb-5 min-h-[40px]">
                     {service.description || 'Layanan servis profesional'}
                   </p>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-semibold text-gray-600">
+                    <span className="text-xs font-semibold text-gray-900">
                       {service.default_duration_minutes} Menit
                     </span>
                     <span className="text-sm font-bold text-blue-600">
@@ -359,12 +359,12 @@ export default function BookingFormClient({ services }: BookingFormProps) {
         <div className="bg-gray-100 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-6">
             <i className="fa-regular fa-calendar-days text-blue-600 text-xl" suppressHydrationWarning></i>
-            <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wider">Jadwal Service</h2>
+            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Jadwal Service</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-5 mb-6">
             <div>
-              <label htmlFor="scheduled_date" className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+              <label htmlFor="scheduled_date" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
                 Tanggal
               </label>
               <input
@@ -375,12 +375,12 @@ export default function BookingFormClient({ services }: BookingFormProps) {
                 min={new Date().toISOString().split('T')[0]}
                 value={selectedDate}
                 onChange={handleDateChange}
-                className="w-full px-4 py-3 bg-white border-none rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full px-4 py-3 bg-white border-none rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
 
             <div>
-              <label htmlFor="scheduled_time" className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+              <label htmlFor="scheduled_time" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
                 Jam (WIB)
               </label>
               <input
@@ -392,7 +392,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
                 max="17:00"
                 value={selectedTime}
                 onChange={handleTimeChange}
-                className={`w-full px-4 py-3 bg-white border-none rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                className={`w-full px-4 py-3 bg-white border-none rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 ${
                   timeError ? 'ring-2 ring-red-500' : 'focus:ring-blue-600'
                 }`}
               />
@@ -424,7 +424,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
         <div>
           <div className="flex items-center gap-3 mb-5">
             <i className="fa-regular fa-file-lines text-blue-600 text-xl" suppressHydrationWarning></i>
-            <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wider">Keluhan / Konsultasi</h2>
+            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Keluhan / Konsultasi</h2>
           </div>
           
           <textarea
@@ -434,12 +434,12 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             value={consultationText}
             onChange={(e) => setConsultationText(e.target.value)}
             placeholder="Wajib diisi jika anda tidak memilih jenis servis"
-            className="w-full px-5 py-4 bg-white border-none rounded-2xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
+            className="w-full px-5 py-4 bg-white border-none rounded-2xl text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
           />
 
           {/* Photo Upload Section */}
           <div className="mt-5">
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+            <label className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-3">
               Foto Keluhan (Opsional)
             </label>
             
@@ -505,11 +505,11 @@ export default function BookingFormClient({ services }: BookingFormProps) {
 
           <div className="space-y-4">
             <div>
-              <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
+              <div className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
                 Layanan Terpilih
               </div>
               <div className="flex justify-between text-sm font-semibold">
-                <span>{selectedServices.length > 0 ? `${selectedServices.length} layanan` : '-'}</span>
+                <span className="text-gray-900">{selectedServices.length > 0 ? `${selectedServices.length} layanan` : '-'}</span>
                 <span className="text-blue-600">
                   {totalPrice > 0 ? `Rp ${totalPrice.toLocaleString('id-ID')}` : 'Rp -'}
                 </span>
@@ -517,32 +517,32 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </div>
 
             <div>
-              <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
+              <div className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
                 Keluhan / Konsultasi
               </div>
               <div className="flex justify-between text-sm font-semibold">
-                <span>{consultationText ? 'Ada keluhan' : '-'}</span>
+                <span className="text-gray-900">{consultationText ? 'Ada keluhan' : '-'}</span>
                 <span className="text-blue-600">Rp -</span>
               </div>
             </div>
 
             <div>
-              <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
+              <div className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
                 Tanggal & Waktu
               </div>
               <div className="text-sm font-semibold flex items-center gap-2">
-                <i className="fa-regular fa-calendar text-gray-500" suppressHydrationWarning></i>
-                <span>{selectedDate && selectedTime ? `${selectedDate} • ${selectedTime}` : '-'}</span>
+                <i className="fa-regular fa-calendar text-gray-900" suppressHydrationWarning></i>
+                <span className="text-gray-900">{selectedDate && selectedTime ? `${selectedDate} • ${selectedTime}` : '-'}</span>
               </div>
             </div>
 
             <div>
-              <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
+              <div className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
                 Kendaraan
               </div>
               <div className="text-sm font-semibold flex items-center gap-2">
-                <i className="fa-solid fa-motorcycle text-gray-500" suppressHydrationWarning></i>
-                <span>{vehicleType || vehiclePlate ? `${vehicleType} ${vehiclePlate}` : '-'}</span>
+                <i className="fa-solid fa-motorcycle text-gray-900" suppressHydrationWarning></i>
+                <span className="text-gray-900">{vehicleType || vehiclePlate ? `${vehicleType} ${vehiclePlate}` : '-'}</span>
               </div>
             </div>
           </div>

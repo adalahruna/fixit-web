@@ -109,20 +109,20 @@ export default async function AuditLogsPage({
                 defaultValue={filters.entity || ''}
                 className="w-full border-2 border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-gray-900"
               >
-                <option value="">All Entities</option>
+                <option value="">Semua Entitas</option>
                 <option value="booking">Booking</option>
                 <option value="user">User</option>
                 <option value="mechanic">Mechanic</option>
-                <option value="service_type">Service Type</option>
+                <option value="service_type">Tipe Layanan</option>
                 <option value="assignment">Assignment</option>
-                <option value="service_progress">Service Progress</option>
-                <option value="system">System</option>
+                <option value="service_progress">Progress Layanan</option>
+                <option value="system">Sistem</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Action
+                Aksi
               </label>
               <input
                 type="text"
@@ -135,7 +135,7 @@ export default async function AuditLogsPage({
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Start Date
+                Tanggal Mulai
               </label>
               <input
                 type="date"
@@ -147,7 +147,7 @@ export default async function AuditLogsPage({
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                End Date
+                Tanggal Akhir
               </label>
               <input
                 type="date"
@@ -196,22 +196,22 @@ export default async function AuditLogsPage({
             <thead className="bg-gradient-to-r from-blue-50 to-blue-100">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">
-                  Timestamp
+                  Waktu
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">
-                  Actor
+                  Aktor
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">
-                  Action
+                  Aksi
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">
-                  Entity
+                  Entitas
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">
-                  Entity ID
+                  ID Entitas
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">
-                  Details
+                  Detail
                 </th>
               </tr>
             </thead>
@@ -239,7 +239,7 @@ export default async function AuditLogsPage({
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        System
+                        Sistem
                       </span>
                     )}
                   </td>
@@ -269,7 +269,7 @@ export default async function AuditLogsPage({
                           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          View metadata
+                          Lihat metadata
                         </summary>
                         <pre className="mt-2 text-xs bg-gray-50 p-3 rounded-lg overflow-x-auto border border-gray-200 max-h-40 overflow-y-auto">
                           {JSON.stringify(log.metadata, null, 2)}
@@ -297,12 +297,12 @@ export default async function AuditLogsPage({
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              Previous
+              Sebelumnya
             </Link>
           )}
           
           <div className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold shadow-md">
-            Page {page} of {auditData.totalPages}
+            Halaman {page} dari {auditData.totalPages}
           </div>
           
           {page < auditData.totalPages && (
@@ -310,7 +310,7 @@ export default async function AuditLogsPage({
               href={`?page=${page + 1}&${new URLSearchParams(filters as Record<string, string>).toString()}`}
               className="px-6 py-3 bg-white border-2 border-blue-300 rounded-lg hover:bg-blue-50 transition-colors font-semibold text-blue-700 flex items-center"
             >
-              Next
+              Selanjutnya
               <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

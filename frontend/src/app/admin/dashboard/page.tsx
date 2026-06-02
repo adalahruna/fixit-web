@@ -47,12 +47,12 @@ export default async function KPIDashboardPage({
               </svg>
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">KPI Dashboard</h1>
-              <p className="text-blue-100 mt-1">Analytics & Performance Monitoring</p>
+              <h1 className="text-3xl font-bold text-white">Dasbor KPI</h1>
+              <p className="text-blue-100 mt-1">Analitik & Pemantauan Kinerja</p>
             </div>
           </div>
           <div className="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3">
-            <div className="text-sm text-blue-100 mb-1">Total Bookings</div>
+            <div className="text-sm text-blue-100 mb-1">Total Booking</div>
             <div className="text-3xl font-extrabold">{kpiData.totalBookings.toLocaleString()}</div>
           </div>
         </div>
@@ -72,7 +72,7 @@ export default async function KPIDashboardPage({
           <form method="GET" className="flex gap-4 items-end">
             <div className="flex-1">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                📅 Start Date
+                📅 Tanggal Mulai
               </label>
               <input
                 type="date"
@@ -83,7 +83,7 @@ export default async function KPIDashboardPage({
             </div>
             <div className="flex-1">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                📅 End Date
+                📅 Tanggal Akhir
               </label>
               <input
                 type="date"
@@ -96,7 +96,7 @@ export default async function KPIDashboardPage({
               type="submit"
               className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-2.5 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-semibold"
             >
-              Update
+              Perbarui
             </button>
           </form>
         </div>
@@ -105,9 +105,9 @@ export default async function KPIDashboardPage({
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard
-          title="Total Bookings"
+          title="Total Booking"
           value={kpiData.totalBookings}
-          subtitle={`Completed: ${kpiData.completedBookings} | Cancelled: ${kpiData.cancelledBookings} | Active: ${kpiData.pendingBookings}`}
+          subtitle={`Selesai: ${kpiData.completedBookings} | Batal: ${kpiData.cancelledBookings} | Aktif: ${kpiData.pendingBookings}`}
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -117,9 +117,9 @@ export default async function KPIDashboardPage({
         />
 
         <KPICard
-          title="On-Time Rate"
+          title="Tingkat Ketepatan Waktu"
           value={`${kpiData.onTimeCompletionRate}%`}
-          subtitle="Target: ≥90% (Good), ≥75% (Warning)"
+          subtitle="Target: ≥90% (Baik), ≥75% (Peringatan)"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -129,9 +129,9 @@ export default async function KPIDashboardPage({
         />
 
         <KPICard
-          title="Avg Service Time"
-          value={`${kpiData.averageServiceTime} min`}
-          subtitle={`Based on ${kpiData.completedBookings} completed services`}
+          title="Rata-rata Waktu Servis"
+          value={`${kpiData.averageServiceTime} menit`}
+          subtitle={`Berdasarkan ${kpiData.completedBookings} servis selesai`}
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -141,9 +141,9 @@ export default async function KPIDashboardPage({
         />
 
         <KPICard
-          title="Mechanic Utilization"
+          title="Utilisasi Mekanik"
           value={`${kpiData.mechanicUtilization}%`}
-          subtitle="Target: ≥70% (Good), ≥50% (Warning)"
+          subtitle="Target: ≥70% (Baik), ≥50% (Peringatan)"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -156,7 +156,7 @@ export default async function KPIDashboardPage({
       {/* Charts and Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Booking Status Distribution */}
-        <ChartCard title="Booking Status Distribution">
+        <ChartCard title="Distribusi Status Booking">
           <DonutChart 
             data={kpiData.bookingsByStatus.map(item => ({
               label: item.status,
@@ -168,7 +168,7 @@ export default async function KPIDashboardPage({
         </ChartCard>
 
         {/* Service Type Performance */}
-        <ChartCard title="Service Type Performance">
+        <ChartCard title="Performa Tipe Layanan">
           <SimpleBarChart 
             data={kpiData.serviceTypeDistribution.map(service => ({
               label: service.name,
@@ -179,7 +179,7 @@ export default async function KPIDashboardPage({
         </ChartCard>
 
         {/* Mechanic Performance */}
-        <ChartCard title="Mechanic Performance">
+        <ChartCard title="Performa Mekanik">
           <SimpleBarChart 
             data={kpiData.mechanicPerformance.map(mechanic => ({
               label: mechanic.name,
@@ -190,7 +190,7 @@ export default async function KPIDashboardPage({
         </ChartCard>
 
         {/* Weekly Trend */}
-        <ChartCard title="Weekly Booking Trend">
+        <ChartCard title="Tren Booking Mingguan">
           <SimpleBarChart 
             data={kpiData.weeklyTrend.map(week => ({
               label: week.week,
@@ -211,19 +211,19 @@ export default async function KPIDashboardPage({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-blue-900">Revenue Overview</h3>
+            <h3 className="text-lg font-bold text-blue-900">Ringkasan Pendapatan</h3>
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center bg-white/70 rounded-lg p-3">
-              <span className="text-sm font-semibold text-blue-800">Total Revenue:</span>
+              <span className="text-sm font-semibold text-blue-800">Total Pendapatan:</span>
               <span className="font-bold text-blue-700">{formatCurrency(kpiData.totalRevenue)}</span>
             </div>
             <div className="flex justify-between items-center bg-white/70 rounded-lg p-3">
-              <span className="text-sm font-semibold text-blue-800">Avg Booking Value:</span>
+              <span className="text-sm font-semibold text-blue-800">Rata-rata Nilai Booking:</span>
               <span className="font-bold text-blue-700">{formatCurrency(kpiData.averageBookingValue)}</span>
             </div>
             <div className="flex justify-between items-center bg-white/70 rounded-lg p-3">
-              <span className="text-sm font-semibold text-blue-800">Revenue per Completed:</span>
+              <span className="text-sm font-semibold text-blue-800">Pendapatan per Selesai:</span>
               <span className="font-bold text-blue-700">
                 {kpiData.completedBookings > 0 
                   ? formatCurrency(kpiData.totalRevenue / kpiData.completedBookings)
@@ -242,11 +242,11 @@ export default async function KPIDashboardPage({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-blue-900">Service Quality</h3>
+            <h3 className="text-lg font-bold text-blue-900">Kualitas Layanan</h3>
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center bg-white/70 rounded-lg p-3">
-              <span className="text-sm font-semibold text-blue-800">Completion Rate:</span>
+              <span className="text-sm font-semibold text-blue-800">Tingkat Penyelesaian:</span>
               <span className="font-bold text-blue-700">
                 {kpiData.totalBookings > 0 
                   ? Math.round((kpiData.completedBookings / kpiData.totalBookings) * 100)
@@ -255,12 +255,12 @@ export default async function KPIDashboardPage({
               </span>
             </div>
             <div className="flex justify-between items-center bg-white/70 rounded-lg p-3">
-              <span className="text-sm font-semibold text-blue-800">Reschedule Rate:</span>
+              <span className="text-sm font-semibold text-blue-800">Tingkat Reschedule:</span>
               <span className="font-bold text-blue-700">{kpiData.rescheduleRate}%</span>
             </div>
             <div className="flex justify-between items-center bg-white/70 rounded-lg p-3">
-              <span className="text-sm font-semibold text-blue-800">Avg Wait Time:</span>
-              <span className="font-bold text-blue-700">{kpiData.averageWaitTime} min</span>
+              <span className="text-sm font-semibold text-blue-800">Rata-rata Waktu Tunggu:</span>
+              <span className="font-bold text-blue-700">{kpiData.averageWaitTime} menit</span>
             </div>
           </div>
         </div>
@@ -273,7 +273,7 @@ export default async function KPIDashboardPage({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-blue-900">Peak Hours</h3>
+            <h3 className="text-lg font-bold text-blue-900">Jam Sibuk</h3>
           </div>
           <div className="space-y-3">
             {kpiData.peakHours.map((peak, index) => (
