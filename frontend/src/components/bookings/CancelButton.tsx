@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { cancelBooking } from '@/lib/bookings/cancel-actions';
 import { useRouter } from 'next/navigation';
+import { Button, Modal } from '@/components/ui';
 
 interface CancelButtonProps {
   bookingId: string;
@@ -46,59 +47,57 @@ export default function CancelButton({
 
   return (
     <div className="w-full sm:w-auto">
-      <button
+      <Button
         onClick={() => setIsOpen(true)}
         disabled={!canCancel || !isCancellableStatus}
-        className={`w-full sm:w-auto px-6 py-3 rounded-lg font-bold text-sm transition-all ${
-          (canCancel && isCancellableStatus)
-            ? 'bg-red-600 text-white hover:bg-red-700 shadow-md hover:shadow-lg'
-            : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-        }`}
+        variant="danger"
+        fullWidth
       >
         {!isCancellableStatus ? `Tidak Bisa Dibatalkan (${status})` :
          !canCancel ? 'Tidak Bisa Dibatalkan (H-1)' : 
          'Batalkan Booking'}
-      </button>
+      </Button>
 
-      {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-bold mb-4 text-gray-900">
-              Konfirmasi Pembatalan
-            </h3>
-            
-            <p className="text-gray-700 mb-6">
-              Apakah Anda yakin ingin membatalkan booking ini? Tindakan ini tidak dapat dibatalkan.
-            </p>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => {
+          setIsOpen(false);
+          setError(null);
+        }}
+        title="Konfirmasi Pembatalan"
+      >
+        <p className="text-gray-700 mb-6">
+          Apakah Anda yakin ingin membatalkan booking ini? Tindakan ini tidak dapat dibatalkan.
+        </p>
 
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-800 text-sm">{error}</p>
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  setError(null);
-                }}
-                disabled={isLoading}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleCancel}
-                disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50"
-              >
-                {isLoading ? 'Membatalkan...' : 'Ya, Batalkan'}
-              </button>
-            </div>
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-800 text-sm">{error}</p>
           </div>
+        )}
+
+        <div className="flex gap-3">
+          <Button
+            onClick={() => {
+              setIsOpen(false);
+              setError(null);
+            }}
+            disabled={isLoading}
+            variant="secondary"
+            fullWidth
+          >
+            Batal
+          </Button>
+          <Button
+            onClick={handleCancel}
+            disabled={isLoading}
+            variant="danger"
+            fullWidth
+          >
+            {isLoading ? 'Membatalkan...' : 'Ya, Batalkan'}
+          </Button>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

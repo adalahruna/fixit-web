@@ -3,35 +3,38 @@
 import { useFormStatus } from 'react-dom';
 import { startService, completeService } from '@/lib/progress/actions';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui';
 
 function SubmitButton({ label, pending }: { label: string; pending: boolean }) {
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
-      className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+      variant="success"
+      fullWidth
     >
       {pending ? 'Memproses...' : label}
-    </button>
+    </Button>
   );
 }
 
 function CompleteButton({ pending }: { pending: boolean }) {
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
-      className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+      variant="primary"
+      fullWidth
     >
       {pending ? 'Memproses...' : '✅ Selesai'}
-    </button>
+    </Button>
   );
 }
 
 export function StartServiceButton({ bookingId }: { bookingId: string }) {
   const router = useRouter();
 
-  async function handleStart(formData: FormData) {
+  async function handleStart(_formData: FormData) {
     const result = await startService(bookingId);
     
     // Log result for debugging
@@ -68,7 +71,7 @@ function StartButton() {
 export function CompleteServiceButton({ bookingId }: { bookingId: string }) {
   const router = useRouter();
 
-  async function handleComplete(formData: FormData) {
+  async function handleComplete(_formData: FormData) {
     const result = await completeService(bookingId);
     
     // Log result for debugging

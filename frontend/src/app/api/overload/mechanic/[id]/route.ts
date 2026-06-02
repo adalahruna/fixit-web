@@ -3,10 +3,10 @@ import { getMechanicOverloadStatus } from '@/lib/utils/overload-detection';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const mechanicId = params.id;
+    const { id: mechanicId } = await params;
     
     // Validate mechanic ID format (UUID validation)
     if (!mechanicId || typeof mechanicId !== 'string') {

@@ -85,25 +85,35 @@ export default async function BookingDetailPage({
   }, 0) || 0;
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       <Link
         href="/customer/bookings"
-        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-xs font-bold uppercase tracking-wider mb-6 transition-opacity hover:opacity-80"
+        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-bold mb-8 transition-all hover:gap-3 duration-200"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
-        Back to Booking List
+        Kembali ke Daftar Booking
       </Link>
 
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-        {/* Header - Blue Background */}
-        <div className="bg-blue-600 px-10 py-9 text-white">
-          <div className="flex justify-between items-start">
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+        {/* Header - Enhanced Gradient Background */}
+        <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 px-10 py-12 text-white overflow-hidden">
+          {/* Decorative circles */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          
+          <div className="relative flex justify-between items-start">
             <div>
-              <h1 className="text-2xl font-bold mb-2 tracking-tight">Detail Booking</h1>
-              <p className="text-xs font-mono tracking-widest text-blue-50 uppercase">
-                Booking ID: #{booking.id.slice(0, 13)}
+              <div className="inline-block bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full mb-4">
+                <span className="text-white/90 text-xs font-bold uppercase tracking-wider">Detail Booking</span>
+              </div>
+              <h1 className="text-3xl font-bold mb-3 tracking-tight">Informasi Lengkap</h1>
+              <p className="text-xs font-mono tracking-widest text-blue-100 uppercase flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                ID: #{booking.id.slice(0, 13)}
               </p>
             </div>
             <RealtimeBookingStatus
@@ -113,98 +123,122 @@ export default async function BookingDetailPage({
           </div>
         </div>
 
-        {/* Grid Information */}
-        <div className="grid md:grid-cols-2 gap-5 p-10">
+        {/* Grid Information - Enhanced */}
+        <div className="grid md:grid-cols-2 gap-6 p-10">
           {/* Schedule Box */}
-          <div className="bg-gray-50 rounded-xl p-7">
-            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-6">
-              Service Schedule
-            </h3>
-            <div className="space-y-5">
-              <div className="flex items-center gap-4">
-                <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-200 overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200 rounded-full opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+            <div className="relative">
+              <div className="flex items-center gap-3 mb-7">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-900 mb-0.5">Date</label>
-                  <span className="block text-sm font-semibold text-gray-900">
-                    {new Date(booking.schedule_start).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    }).toUpperCase()}
-                  </span>
-                </div>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">
+                  Jadwal Servis
+                </h3>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-900 mb-0.5">Start Time</label>
-                  <span className="block text-sm font-semibold text-gray-900">
-                    {new Date(booking.schedule_start).toLocaleTimeString('id-ID', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                </div>
-              </div>
-              {booking.schedule_end && (
-                <div className="flex items-center gap-4">
-                  <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm">
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm flex-shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-900 mb-0.5">Est. Completion</label>
-                    <span className="block text-sm font-semibold text-gray-900">
-                      {new Date(booking.schedule_end).toLocaleTimeString('id-ID', {
-                        hour: '2-digit',
-                        minute: '2-digit',
+                    <label className="block text-xs text-gray-600 font-semibold mb-1">Tanggal</label>
+                    <span className="block text-base font-bold text-gray-900">
+                      {new Date(booking.schedule_start).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
                       })}
                     </span>
                   </div>
                 </div>
-              )}
+                <div className="flex items-start gap-4">
+                  <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm flex-shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 font-semibold mb-1">Waktu Mulai</label>
+                    <span className="block text-base font-bold text-gray-900">
+                      {new Date(booking.schedule_start).toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })} WIB
+                    </span>
+                  </div>
+                </div>
+                {booking.schedule_end && (
+                  <div className="flex items-start gap-4">
+                    <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-green-600 shadow-sm flex-shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 font-semibold mb-1">Est. Selesai</label>
+                      <span className="block text-base font-bold text-gray-900">
+                        {new Date(booking.schedule_end).toLocaleTimeString('id-ID', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })} WIB
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Motorcycle Data Box */}
-          <div className="bg-gray-50 rounded-xl p-7">
-            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-6">
-              Motorcycle Data
-            </h3>
-            <div className="space-y-5">
-              <div className="flex items-center gap-4">
-                <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12.72 2.03C12.5 2.01 12.26 2 12 2s-.5.01-.72.03C9.08 2.36 7.5 4.19 7.5 6.5v.5H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2h-1.5v-.5c0-2.31-1.58-4.14-3.78-4.47zM16 9v10H8V9h8zm-7.5-2.5c0-1.93 1.57-3.5 3.5-3.5s3.5 1.57 3.5 3.5V7h-7v-.5z"/>
+          <div className="relative bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 border border-purple-200 overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+            <div className="relative">
+              <div className="flex items-center gap-3 mb-7">
+                <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    <path d="M17.5 4.5c-1.95-1.95-5.05-1.95-7 0l-1.5 1.5 7 7 1.5-1.5c1.95-1.95 1.95-5.05 0-7z"/>
+                    <path d="M4 12c0-2.21.9-4.21 2.35-5.65L8 8l2-2-1.65-1.65C9.79 3.9 11.79 3 14 3c1.87 0 3.62.64 5 1.71L17 7l2-2 2.29 2.29C22.36 8.38 23 10.13 23 12c0 2.21-.9 4.21-2.35 5.65L19 16l-2 2 1.65 1.65C17.21 20.1 15.21 21 13 21c-1.87 0-3.62-.64-5-1.71L10 17l-2 2-2.29-2.29C4.64 15.62 4 13.87 4 12z"/>
                   </svg>
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-900 mb-0.5">Brand & Model</label>
-                  <span className="block text-sm font-semibold text-gray-900">
-                    {booking.vehicle_type}
-                  </span>
-                </div>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">
+                  Data Kendaraan
+                </h3>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
-                  </svg>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-purple-600 shadow-sm flex-shrink-0">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                      <path d="M17.5 4.5c-1.95-1.95-5.05-1.95-7 0l-1.5 1.5 7 7 1.5-1.5c1.95-1.95 1.95-5.05 0-7z"/>
+                      <path d="M4 12c0-2.21.9-4.21 2.35-5.65L8 8l2-2-1.65-1.65C9.79 3.9 11.79 3 14 3c1.87 0 3.62.64 5 1.71L17 7l2-2 2.29 2.29C22.36 8.38 23 10.13 23 12c0 2.21-.9 4.21-2.35 5.65L19 16l-2 2 1.65 1.65C17.21 20.1 15.21 21 13 21c-1.87 0-3.62-.64-5-1.71L10 17l-2 2-2.29-2.29C4.64 15.62 4 13.87 4 12z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 font-semibold mb-1">Merk & Model</label>
+                    <span className="block text-base font-bold text-gray-900">
+                      {booking.vehicle_type}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-900 mb-0.5">License Plate</label>
-                  <span className="block text-sm font-semibold text-gray-900">
-                    {booking.vehicle_plate}
-                  </span>
+                <div className="flex items-start gap-4">
+                  <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-purple-600 shadow-sm flex-shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 font-semibold mb-1">Nomor Polisi</label>
+                    <span className="block text-base font-bold text-gray-900">
+                      {booking.vehicle_plate}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

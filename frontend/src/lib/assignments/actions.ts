@@ -87,7 +87,7 @@ export async function unassignMechanic(bookingId: string) {
   // Get assignment details before unassignment for audit logging
   const { data: assignment } = await supabase
     .from('assignments')
-    .select('mechanic_id')
+    .select('mechanic_id, mechanics(name)')
     .eq('booking_id', bookingId)
     .single();
 
@@ -118,7 +118,8 @@ export async function unassignMechanic(bookingId: string) {
     bookingId,
     {
       booking_id: bookingId,
-      mechanic_id: assignment?.mechanic_id || 'Unknown'
+      mechanic_id: assignment?.mechanic_id || 'Unknown',
+      mechanic_name: (assignment?.mechanics as any)?.name || 'Unknown'
     }
   );
 
