@@ -14,7 +14,7 @@ export default async function ServicesPage() {
 
   const totalServices = services?.length || 0;
   const totalRevenue = services?.reduce((sum, s) => sum + (s.price || 0), 0) || 0;
-  const avgDuration = totalServices > 0 
+  const avgDuration = totalServices > 0 && services
     ? Math.round(services.reduce((sum, s) => sum + (s.default_duration_minutes || 0), 0) / totalServices)
     : 0;
 
