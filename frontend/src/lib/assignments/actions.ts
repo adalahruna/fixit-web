@@ -49,6 +49,7 @@ export async function assignMechanic(bookingId: string, mechanicId: string) {
 
   // Log audit activity (non-blocking)
   await logAuditActivity(
+    user.id,
     AUDIT_ACTIONS.ASSIGN_MECHANIC,
     AUDIT_ENTITIES.ASSIGNMENT,
     bookingId,
@@ -113,6 +114,7 @@ export async function unassignMechanic(bookingId: string) {
 
   // Log audit activity (non-blocking)
   await logAuditActivity(
+    user.id,
     AUDIT_ACTIONS.UNASSIGN_MECHANIC,
     AUDIT_ENTITIES.ASSIGNMENT,
     bookingId,
