@@ -208,6 +208,7 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
 
   // Log audit activity
   await logAuditActivity(
+    user.id,
     AUDIT_ACTIONS.CREATE_BOOKING,
     AUDIT_ENTITIES.BOOKING,
     booking.id,

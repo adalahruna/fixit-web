@@ -75,6 +75,7 @@ export async function cancelBooking(bookingId: string) {
 
   // Log audit activity
   await logAuditActivity(
+    user.id,
     AUDIT_ACTIONS.CANCEL_BOOKING,
     AUDIT_ENTITIES.BOOKING,
     bookingId,

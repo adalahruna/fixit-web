@@ -281,14 +281,14 @@ export async function getRecentAuditLogs(
  * @param actorId - ID of the user performing the action (optional, will use current user if not provided)
  * @param action - The action being performed (e.g., 'create_booking', 'delete_service_type')
  * @param entity - The entity type (e.g., 'booking', 'service_type', 'user')
- * @param entityId - The ID of the entity being acted upon
+ * @param entityId - The ID of the entity being acted upon (optional for system-level actions)
  * @param metadata - Additional metadata about the action
  */
 export async function logAuditActivity(
   actorId: string | null | undefined,
   action: string,
   entity: string,
-  entityId: string,
+  entityId: string | undefined,
   metadata?: Record<string, unknown>
 ): Promise<void> {
   try {
@@ -332,13 +332,13 @@ export async function logAuditActivity(
  * Log a system audit activity (without actor)
  * @param action - The action being performed
  * @param entity - The entity type
- * @param entityId - The ID of the entity being acted upon
+ * @param entityId - The ID of the entity being acted upon (optional for system-level actions)
  * @param metadata - Additional metadata about the action
  */
 export async function logSystemAuditActivity(
   action: string,
   entity: string,
-  entityId: string,
+  entityId: string | undefined,
   metadata?: Record<string, unknown>
 ): Promise<void> {
   return logAuditActivity(null, action, entity, entityId, metadata);

@@ -67,6 +67,7 @@ export async function handleServerError(
   // Log error to audit system
   if (context) {
     await logAuditActivity(
+      context.userId || null,
       `error_${context.action || 'unknown'}`,
       context.entity || AUDIT_ENTITIES.SYSTEM,
       context.entityId,

@@ -105,6 +105,7 @@ export async function rescheduleBooking(
   // Log audit activity (non-blocking)
   try {
     await logAuditActivity(
+      user.id,
       AUDIT_ACTIONS.RESCHEDULE_BOOKING,
       AUDIT_ENTITIES.BOOKING,
       bookingId,

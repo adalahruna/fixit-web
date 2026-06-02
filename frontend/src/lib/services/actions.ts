@@ -29,6 +29,7 @@ export async function createService(_prevState: unknown, formData: FormData) {
 
   // Log audit activity (non-blocking)
   await logAuditActivity(
+    null,
     AUDIT_ACTIONS.CREATE_SERVICE_TYPE,
     AUDIT_ENTITIES.SERVICE_TYPE,
     data.id,
@@ -70,6 +71,7 @@ export async function updateService(_prevState: unknown, formData: FormData) {
 
   // Log audit activity (non-blocking)
   await logAuditActivity(
+    null,
     AUDIT_ACTIONS.UPDATE_SERVICE_TYPE,
     AUDIT_ENTITIES.SERVICE_TYPE,
     id,
@@ -122,6 +124,7 @@ export async function deleteService(id: string) {
   // Log audit activity (non-blocking)
   if (serviceType) {
     await logAuditActivity(
+      null,
       AUDIT_ACTIONS.DELETE_SERVICE_TYPE,
       AUDIT_ENTITIES.SERVICE_TYPE,
       id,
