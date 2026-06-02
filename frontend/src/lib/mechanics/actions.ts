@@ -111,6 +111,7 @@ export async function createMechanic(_prevState: unknown, formData: FormData) {
     // Log audit activity (non-blocking)
     try {
       await logAuditActivity(
+        authData.user.id,
         AUDIT_ACTIONS.CREATE_MECHANIC,
         AUDIT_ENTITIES.MECHANIC,
         mechanicData.id,
@@ -231,6 +232,7 @@ export async function updateMechanic(_prevState: unknown, formData: FormData) {
     // Log audit activity after successful update (non-blocking)
     try {
       await logAuditActivity(
+        user?.id || null,
         AUDIT_ACTIONS.UPDATE_MECHANIC,
         AUDIT_ENTITIES.MECHANIC,
         id,
@@ -305,6 +307,7 @@ export async function deleteMechanic(id: string) {
     if (mechanic) {
       try {
         await logAuditActivity(
+          user?.id || null,
           AUDIT_ACTIONS.DELETE_MECHANIC,
           AUDIT_ENTITIES.MECHANIC,
           id,

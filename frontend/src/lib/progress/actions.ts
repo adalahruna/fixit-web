@@ -38,6 +38,7 @@ export async function startService(bookingId: string) {
 
   // Log audit activity after successful service start
   await logAuditActivity(
+    user?.id || null,
     AUDIT_ACTIONS.START_SERVICE,
     AUDIT_ENTITIES.SERVICE_PROGRESS,
     bookingId,
@@ -86,6 +87,7 @@ export async function completeService(bookingId: string) {
 
   // Log audit activity after successful service completion
   await logAuditActivity(
+    user?.id || null,
     AUDIT_ACTIONS.COMPLETE_SERVICE,
     AUDIT_ENTITIES.SERVICE_PROGRESS,
     bookingId,
