@@ -18,18 +18,11 @@ export default async function MechanicBookingDetailPage({
   // Get current user
   const { data: { user } } = await supabase.auth.getUser();
   
-  // Get user data from users table
-  const { data: userData } = await supabase
-    .from('users')
-    .select('name')
-    .eq('id', user?.id)
-    .single();
-  
-  // Get mechanic data
+  // Get mechanic data by user_id (proper relation)
   const { data: mechanic } = await supabase
     .from('mechanics')
-    .select('id, name')
-    .eq('name', userData?.name || '')
+    .select('id, name, user_id')
+    .eq('user_id', user?.id)
     .single();
 
   if (!mechanic) {
@@ -126,7 +119,7 @@ export default async function MechanicBookingDetailPage({
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-2xl font-bold mb-1">Detail Booking</h1>
-              <p className="text-purple-100">Queue Position: #{assignment.queue_position}</p>
+              <p className="text-purple-50">Queue Position: #{assignment.queue_position}</p>
             </div>
             {progress && (
               <span className={`px-4 py-2 text-sm font-medium rounded-full ${getStatusBadge(progress.status)} text-gray-800`}>
@@ -226,6 +219,24 @@ export default async function MechanicBookingDetailPage({
                     : booking.booking_consultations.complaint_text}
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* Foto Keluhan */}
+          {booking.complaint_photo_url && (
+            <div>
+              <h2 className="text-lg font-semibold mb-3 text-gray-900">📸 Foto Keluhan</h2>
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={booking.complaint_photo_url} 
+                  alt="Foto keluhan customer" 
+                  className="w-full max-w-2xl mx-auto object-contain"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Foto diupload oleh customer saat membuat booking
+              </p>
             </div>
           )}
 

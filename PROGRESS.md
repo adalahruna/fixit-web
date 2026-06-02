@@ -3,8 +3,8 @@
 ## Timeline
 - **Tanggal Mulai:** 14 Maret 2026
 - **Target Selesai:** Week 16 (sesuai sprint plan)
-- **Status Saat Ini:** Week 12 (Realtime & Reschedule) ✅
-- **Progress:** 12/16 weeks (75% complete)
+- **Status Saat Ini:** Week 15 (Dashboard & Testing) ✅
+- **Progress:** 15/16 weeks (93.75% complete)
 
 ---
 
@@ -183,6 +183,77 @@
 - **Status:** Completed, ready to test
 - **Commit:** Ready to commit
 
+### Week 13: Overload Detection & SLA (18 Mar 2026)
+- ✅ Overload detection logic
+  - Deteksi overload mekanik berdasarkan kapasitas harian (threshold 80%)
+  - Sistem overload percentage calculation
+  - Real-time monitoring kapasitas vs beban aktual
+- ✅ SLA delay calculation
+  - Kalkulasi delay berdasarkan estimasi vs aktual completion
+  - SLA tolerance 30 menit (configurable)
+  - At-risk detection untuk booking yang berpotensi terlambat
+- ✅ Warning indicators
+  - OverloadWarning component untuk individual & system-wide alerts
+  - SLAWarning component untuk booking terlambat/berisiko
+  - Visual indicators dengan color coding (yellow/red)
+- ✅ SLA & Overload monitoring page
+  - Dashboard monitoring untuk admin/owner
+  - List overloaded mechanics dengan detail kapasitas
+  - List at-risk dan late bookings
+  - Summary cards dengan key metrics
+- ✅ Integration ke existing pages
+  - SLA warnings di admin booking detail
+  - Overload warnings untuk assigned mechanics
+  - API routes untuk real-time overload data
+- **Files:**
+  - `frontend/src/lib/utils/overload-detection.ts`
+  - `frontend/src/lib/utils/sla-calculation.ts`
+  - `frontend/src/components/warnings/OverloadWarning.tsx`
+  - `frontend/src/components/warnings/SLAWarning.tsx`
+  - `frontend/src/app/api/overload/system/route.ts`
+  - `frontend/src/app/api/overload/mechanic/[id]/route.ts`
+  - `frontend/src/app/admin/sla/page.tsx`
+  - Updated `frontend/src/app/admin/layout.tsx`
+  - Updated `frontend/src/app/admin/bookings/[id]/page.tsx`
+- **Status:** Completed & ready to test
+- **Commit:** Ready to commit
+
+### Week 14: Audit Log & Error Handling (18 Mar 2026)
+- ✅ Audit log implementation
+  - Comprehensive audit logging system with actor tracking
+  - Audit actions for all major operations (booking, assignment, service progress)
+  - Metadata storage for detailed activity context
+  - Admin audit logs page with filtering and pagination
+- ✅ Global error handler
+  - Standardized error classes (BusinessError, ValidationError, etc.)
+  - Server-side error handling with audit logging
+  - Client-side error boundary components
+  - Consistent error response formatting
+- ✅ Basic KPI dashboard
+  - Key performance metrics calculation
+  - Booking statistics and trends
+  - Service quality metrics (on-time rate, completion rate)
+  - Mechanic utilization tracking
+  - Revenue metrics and daily booking trends
+- ✅ Error format standardization
+  - Global error pages (404, 500)
+  - Error boundary for React components
+  - Consistent error messaging across the application
+- **Files:**
+  - `frontend/src/lib/audit/actions.ts`
+  - `frontend/src/lib/errors/handler.ts`
+  - `frontend/src/app/admin/audit/page.tsx`
+  - `frontend/src/lib/kpi/calculations.ts`
+  - `frontend/src/app/admin/dashboard/page.tsx`
+  - `frontend/src/components/errors/ErrorBoundary.tsx`
+  - `frontend/src/app/error.tsx`
+  - `frontend/src/app/not-found.tsx`
+  - Updated `frontend/src/app/admin/layout.tsx`
+  - Updated `frontend/src/lib/bookings/actions.ts`
+  - Updated `frontend/src/lib/bookings/cancel-actions.ts`
+- **Status:** Completed & ready to test
+- **Commit:** Ready to commit
+
 ---
 
 ## 🚧 In Progress
@@ -194,10 +265,10 @@ _Tidak ada task yang sedang dikerjakan_
 ## 📋 Next Tasks (Berdasarkan Sprint Plan)
 
 ### Week 13: Overload Detection & SLA
-- [ ] Overload detection logic
-- [ ] SLA delay calculation
-- [ ] Warning indicators for at-risk bookings
-- [ ] List late/at-risk bookings
+- ✅ Overload detection logic
+- ✅ SLA delay calculation
+- ✅ Warning indicators for at-risk bookings
+- ✅ List late/at-risk bookings
 
 ### Week 14: Audit Log & Error Handling
 - [ ] Audit log implementation
@@ -205,11 +276,44 @@ _Tidak ada task yang sedang dikerjakan_
 - [ ] Basic KPI dashboard
 - [ ] Error format standardization
 
-### Week 15: Dashboard & Testing
-- [ ] Complete dashboard KPI
-- [ ] Unit/integration tests
-- [ ] Black-box testing per role
-- [ ] Testing report
+### Week 15: Dashboard & Testing (18 Mar 2026)
+- ✅ Complete dashboard KPI
+  - Enhanced KPI dashboard with advanced metrics and visualizations
+  - Added KPI cards, charts, and analytics components
+  - Implemented booking status distribution, service type performance
+  - Added mechanic performance tracking and weekly trends
+  - Enhanced revenue metrics and service quality indicators
+- ✅ Unit/integration tests
+  - Comprehensive unit test suite for business logic functions
+  - Integration test runner for complete user workflows
+  - Test utilities with predefined users and scenarios
+  - Jest configuration with coverage reporting
+- ✅ Black-box testing per role
+  - Black-box testing scenarios for all user roles
+  - Test data and validation functions
+  - Testing dashboard for manual test execution
+  - Automated test report generation
+- ✅ Testing report
+  - Test report generator with HTML and Markdown output
+  - Coverage analysis and recommendations
+  - Test execution summary and detailed results
+  - Testing documentation and best practices guide
+- **Files:**
+  - `frontend/src/lib/testing/unit-tests.ts`
+  - `frontend/src/lib/testing/integration-tests.ts`
+  - `frontend/src/lib/testing/test-report.ts`
+  - `frontend/src/lib/testing/README.md`
+  - `frontend/src/app/admin/testing/page.tsx`
+  - `frontend/src/components/dashboard/KPICard.tsx`
+  - `frontend/src/components/dashboard/ChartCard.tsx`
+  - Enhanced `frontend/src/lib/kpi/calculations.ts`
+  - Enhanced `frontend/src/app/admin/dashboard/page.tsx`
+  - `frontend/jest.config.js`
+  - `frontend/jest.setup.js`
+  - Updated `frontend/package.json`
+  - Updated `frontend/src/app/admin/layout.tsx`
+- **Status:** Completed & ready to test
+- **Commit:** Ready to commit
 
 ### Week 16: Deployment & Final Polish
 - [ ] Deploy to Vercel
@@ -264,14 +368,15 @@ _Tidak ada task yang sedang dikerjakan_
 
 ---
 
-## 🎯 Current Sprint Goal (Week 12)
-**Goal:** Implement realtime updates & reschedule feature
+## 🎯 Current Sprint Goal (Week 14)
+**Goal:** Implement audit logging & error handling system
 
 **Definition of Done:**
-- ✅ Customer dapat reschedule booking dengan validasi H-1
-- ✅ Status updates terlihat real-time (≤5 detik) atau via polling
-- ✅ Reschedule check slot availability
-- ✅ Timezone handling WIB/UTC correct
-- ✅ All pages have realtime subscription or polling fallback
+- ✅ Audit log system tracks all major user actions
+- ✅ Global error handler provides consistent error responses
+- ✅ KPI dashboard shows key business metrics
+- ✅ Error boundaries handle client-side errors gracefully
+- ✅ Admin can view audit logs with filtering capabilities
+- ✅ Standardized error pages for 404/500 errors
 
-**Next:** Week 13 - Overload Detection & SLA Tracking
+**Next:** Week 16 - Deployment & Final Polish

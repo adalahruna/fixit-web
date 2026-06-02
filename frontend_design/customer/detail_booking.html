@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixit - Detail Booking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            /* Background utama abu-abu sangat muda */
+            color: #111827;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Navbar */
+        .navbar-container {
+            background-color: #ffffff;
+            width: 100%;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .brand-icon {
+            background-color: #0052ff;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-menu a {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .nav-menu a:first-child {
+            color: #4b5563;
+            /* Menu tidak aktif */
+            font-weight: 500;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Main Container */
+        .main-content {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #0052ff;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 25px;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover {
+            opacity: 0.8;
+        }
+
+        /* Booking Detail Card */
+        .booking-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Card Header (Blue Background) */
+        .card-header-blue {
+            background-color: #0052ff;
+            /* Biru vibran */
+            padding: 35px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            color: #ffffff;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-title p {
+            font-size: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            /* Tampilan Monospace untuk ID */
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.9);
+            text-transform: uppercase;
+        }
+
+        .badge-status {
+            background-color: #ffedd5;
+            color: #ea580c;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Grid Information (Schedule & Moto Data) */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 40px;
+        }
+
+        .info-box {
+            background-color: #f4f5f8;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .info-box-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon-circle {
+            background-color: #ffffff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #0052ff;
+            font-size: 16px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            flex-shrink: 0;
+        }
+
+        .item-text label {
+            display: block;
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .item-text span {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .moto-image {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 20px;
+            filter: grayscale(100%) contrast(1.2);
+            /* Efek abu-abu dramatis sesuai gambar */
+        }
+
+        /* Services Section */
+        .services-section {
+            padding: 0 40px 30px 40px;
+        }
+
+        .services-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .services-header h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .badge-count {
+            background-color: #eff6ff;
+            color: #0052ff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .service-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .service-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .service-icon {
+            background-color: #e5e7eb;
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: #4b5563;
+        }
+
+        .service-detail h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .service-detail p {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .service-right {
+            display: flex;
+            gap: 40px;
+            text-align: right;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-group label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-group span {
+            font-size: 13px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* Notes Box */
+        .notes-box {
+            background-color: #f4f5f8;
+            padding: 18px 24px;
+            border-radius: 8px;
+        }
+
+        .notes-box label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .notes-box p {
+            font-size: 13px;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        /* Card Footer */
+        .card-footer {
+            border-top: 1px solid #f1f5f9;
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-section {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .total-section label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .total-section .price {
+            font-size: 32px;
+            font-weight: 800;
+            color: #111827;
+            letter-spacing: -1px;
+        }
+
+        .total-section .price span {
+            font-weight: 400;
+            font-size: 26px;
+        }
+
+        /* Action Button */
+        .btn-reschedule {
+            background-color: #ea580c;
+            /* Orange Button */
+            color: white;
+            border: none;
+            padding: 16px 28px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .btn-reschedule:hover {
+            background-color: #d84a08;
+            transform: translateY(-2px);
+        }
+
+        /* Gradient Bottom Line */
+        .gradient-bottom {
+            height: 6px;
+            width: 100%;
+            background: linear-gradient(90deg, #0052ff 0%, #4f46e5 50%, #be123c 100%);
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+
+            .card-header-blue,
+            .services-section,
+            .card-footer {
+                padding: 25px 20px;
+            }
+
+            .card-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .btn-reschedule {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .service-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .service-right {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-bicycle"></i>
+                </div>
+                Fixit
+            </div>
+            <div class="nav-right">
+                <div class="nav-menu">
+                    <a href="#">Dashboard</a>
+                    <a href="#">Booking saya</a>
+                </div>
+                <img src="https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg?w=150"
+                    alt="User Avatar" class="user-avatar">
+            </div>
+        </nav>
+    </div>
+
+    <main class="main-content">
+
+        <a href="#" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Booking List
+        </a>
+
+        <div class="booking-card">
+
+            <div class="card-header-blue">
+                <div class="header-title">
+                    <h1>Detail Booking</h1>
+                    <p>Booking ID: #AV-20231015-01</p>
+                </div>
+                <div class="badge-status">
+                    Menunggu
+                </div>
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-box">
+                    <div class="info-box-title">Service Schedule</div>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <div class="icon-circle"><i class="fa-regular fa-calendar"></i></div>
+                            <div class="item-text">
+                                <label>Date</label>
+                                <span>12 APRIL 2026</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="icon-circle"><i class="fa-regular fa-clock"></i></div>
+                            <div class="item-text">
+                                <label>Start Time</label>
+                                <span>10:00</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="icon-circle"><i class="fa-solid fa-stopwatch"></i></div>
+                            <div class="item-text">
+                                <label>Est. Completion</label>
+                                <span>14:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-box-title">Motorcycle Data</div>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <div class="icon-circle"><i class="fa-solid fa-motorcycle"></i></div>
+                            <div class="item-text">
+                                <label>Brand & Model</label>
+                                <span>Ducati Panigale V4</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="icon-circle"><i class="fa-solid fa-id-card"></i></div>
+                            <div class="item-text">
+                                <label>License Plate</label>
+                                <span>B 1234 XYZ</span>
+                            </div>
+                        </div>
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                        alt="Motorcycle Detail" class="moto-image">
+                </div>
+
+            </div>
+
+            <div class="services-section">
+
+                <div class="services-header">
+                    <h3>Jenis Servis</h3>
+                    <div class="badge-count">2 ITEMS</div>
+                </div>
+
+                <div class="service-row">
+                    <div class="service-left">
+                        <div class="service-icon">
+                            <i class="fa-solid fa-truck-monster"></i>
+                        </div>
+                        <div class="service-detail">
+                            <h4>Ganti Ban</h4>
+                            <p>Synthetic premium oil replacement</p>
+                        </div>
+                    </div>
+                    <div class="service-right">
+                        <div class="stat-group">
+                            <label>Durasi</label>
+                            <span>1 Jam</span>
+                        </div>
+                        <div class="stat-group">
+                            <label>Harga</label>
+                            <span>Rp 180.000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="notes-box">
+                    <label>Catatan/Keluhan:</label>
+                    <p>Kalok distater idup</p>
+                </div>
+
+            </div>
+
+            <div class="card-footer">
+                <div class="total-section">
+                    <label>Total Estimasi Harga</label>
+                    <div class="price"><span>Rp</span> 180.000</div>
+                </div>
+                <button class="btn-reschedule">
+                    <i class="fa-regular fa-calendar-plus"></i> Reschedule Booking
+                </button>
+            </div>
+
+            <div class="gradient-bottom"></div>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>

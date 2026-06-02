@@ -1,6 +1,6 @@
 import { requireRole } from '@/lib/auth/utils';
 import { createClient } from '@/lib/supabase/server';
-import { BookingForm } from '@/components/bookings/BookingForm';
+import BookingFormClient from './BookingFormClient';
 
 export default async function NewBookingPage() {
   await requireRole(['customer']);
@@ -12,9 +12,12 @@ export default async function NewBookingPage() {
     .order('name');
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Buat Booking Baru</h1>
-      <BookingForm services={services || []} />
+    <div className="max-w-[1400px] mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Buat Booking Baru</h1>
+        <p className="text-gray-600">Pilih layanan dan jadwal servis motor Anda</p>
+      </div>
+      <BookingFormClient services={services || []} />
     </div>
   );
 }

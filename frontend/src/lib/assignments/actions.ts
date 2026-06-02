@@ -1,7 +1,9 @@
 'use server';
 
 import { createClient } from '../supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidateAssignmentPaths } from '../utils/revalidation';
+import { logAuditActivity } from '../audit/actions';
+import { AUDIT_ACTIONS, AUDIT_ENTITIES } from '../audit/constants';
 
 export async function assignMechanic(bookingId: string, mechanicId: string) {
   const supabase = await createClient();
@@ -23,56 +25,42 @@ export async function assignMechanic(bookingId: string, mechanicId: string) {
     return { error: 'Forbidden: Only admin/owner can assign mechanics' };
   }
 
-  // Get current queue position for this mechanic
-  const { data: existingAssignments } = await supabase
-    .from('assignments')
-    .select('queue_position')
-    .eq('mechanic_id', mechanicId)
-    .order('queue_position', { ascending: false })
-    .limit(1);
+  // Use atomic database function for assignment
+  const { data: result, error } = await supabase
+    .rpc('assign_mechanic_atomic', {
+      p_booking_id: bookingId,
+      p_mechanic_id: mechanicId
+    });
 
-  const nextPosition = existingAssignments && existingAssignments.length > 0 
-    ? existingAssignments[0].queue_position + 1 
-    : 1;
+  if (error) {
+    return { error: error.message };
+  }
 
-  // Create assignment
-  const { error: assignError } = await supabase
-    .from('assignments')
-    .insert({
+  if (result?.error) {
+    return { error: result.error };
+  }
+
+  // Get mechanic name for audit metadata
+  const { data: mechanic } = await supabase
+    .from('mechanics')
+    .select('name')
+    .eq('id', mechanicId)
+    .single();
+
+  // Log audit activity (non-blocking)
+  await logAuditActivity(
+    AUDIT_ACTIONS.ASSIGN_MECHANIC,
+    AUDIT_ENTITIES.ASSIGNMENT,
+    bookingId,
+    {
       booking_id: bookingId,
       mechanic_id: mechanicId,
-      queue_position: nextPosition,
-    });
+      mechanic_name: mechanic?.name || 'Unknown'
+    }
+  );
 
-  if (assignError) {
-    return { error: assignError.message };
-  }
-
-  // Update booking status to confirmed
-  const { error: updateError } = await supabase
-    .from('bookings')
-    .update({ status: 'confirmed' })
-    .eq('id', bookingId);
-
-  if (updateError) {
-    return { error: updateError.message };
-  }
-
-  // Create service_progress record with queued status
-  const { error: progressError } = await supabase
-    .from('service_progress')
-    .insert({
-      booking_id: bookingId,
-      status: 'queued',
-    });
-
-  if (progressError) {
-    return { error: progressError.message };
-  }
-
-  revalidatePath('/admin/bookings');
-  revalidatePath('/mechanic');
-  
+  // Revalidate all related paths
+  revalidateAssignmentPaths(bookingId);
   return { success: true };
 }
 
@@ -96,34 +84,46 @@ export async function unassignMechanic(bookingId: string) {
     return { error: 'Forbidden: Only admin/owner can unassign mechanics' };
   }
 
-  // Delete assignment
-  const { error: deleteError } = await supabase
+  // Get assignment details before unassignment for audit logging
+  const { data: assignment } = await supabase
     .from('assignments')
-    .delete()
-    .eq('booking_id', bookingId);
+    .select('mechanic_id, mechanics(name)')
+    .eq('booking_id', bookingId)
+    .single();
 
-  if (deleteError) {
-    return { error: deleteError.message };
+  // Use atomic database function for unassignment
+  const { data: result, error } = await supabase
+    .rpc('unassign_mechanic_atomic', {
+      p_booking_id: bookingId
+    });
+
+  if (error) {
+    return { error: error.message };
   }
 
-  // Update booking status back to pending
-  const { error: updateError } = await supabase
-    .from('bookings')
-    .update({ status: 'pending' })
-    .eq('id', bookingId);
-
-  if (updateError) {
-    return { error: updateError.message };
+  // Check if function returned an error
+  if (result && typeof result === 'object') {
+    if ('error' in result && result.error) {
+      return { error: result.error as string };
+    }
+    if ('success' in result && result.success === false && 'error' in result) {
+      return { error: result.error as string };
+    }
   }
 
-  // Delete service_progress record
-  await supabase
-    .from('service_progress')
-    .delete()
-    .eq('booking_id', bookingId);
+  // Log audit activity (non-blocking)
+  await logAuditActivity(
+    AUDIT_ACTIONS.UNASSIGN_MECHANIC,
+    AUDIT_ENTITIES.ASSIGNMENT,
+    bookingId,
+    {
+      booking_id: bookingId,
+      mechanic_id: assignment?.mechanic_id || 'Unknown',
+      mechanic_name: (assignment?.mechanics as any)?.name || 'Unknown'
+    }
+  );
 
-  revalidatePath('/admin/bookings');
-  revalidatePath('/mechanic');
-  
+  // Revalidate all related paths
+  revalidateAssignmentPaths(bookingId);
   return { success: true };
 }

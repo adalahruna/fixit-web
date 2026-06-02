@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixit - Booking Saya</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f6f7f9;
+            /* Warna background abu-abu sangat muda sesuai gambar */
+            color: #111827;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Navbar / Header */
+        .navbar-container {
+            background-color: #ffffff;
+            width: 100%;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .brand-icon {
+            background-color: #0052ff;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-menu a {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111827;
+            transition: color 0.2s;
+        }
+
+        .nav-menu a:hover {
+            color: #0052ff;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Main Content Container */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 50px 40px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Page Header (Title & Buttons) */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1f2937;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: #111827;
+            border: 1.5px solid #111827;
+        }
+
+        .btn-outline:hover {
+            background-color: #f3f4f6;
+        }
+
+        .btn-primary {
+            background-color: #4f7cf6;
+            /* Biru terang sesuai gambar */
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(79, 124, 246, 0.4);
+            /* Efek bayangan biru (glow) */
+        }
+
+        .btn-primary:hover {
+            background-color: #3b66df;
+        }
+
+        /* Empty State */
+        .empty-state {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .empty-state h2 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #a0aab2;
+            /* Warna teks abu-abu sesuai gambar */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .main-content {
+                padding: 30px 20px;
+            }
+
+            .empty-state h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-bicycle"></i>
+                </div>
+                Fixit
+            </div>
+            <div class="nav-right">
+                <div class="nav-menu">
+                    <a href="#">Dashboard</a>
+                    <a href="#">Booking saya</a>
+                </div>
+                <img src="https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg?w=150"
+                    alt="User Avatar" class="user-avatar">
+            </div>
+        </nav>
+    </div>
+
+    <main class="main-content">
+
+        <div class="page-header">
+            <h1 class="page-title">Booking Saya</h1>
+
+            <div class="header-actions">
+                <button class="btn btn-outline">History Booking</button>
+                <button class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Book New Service
+                </button>
+            </div>
+        </div>
+
+        <div class="empty-state">
+            <h2>ANDA BELUM MEMBUAT BOOKING SAMA SEKALI</h2>
+        </div>
+
+    </main>
+
+</body>
+
+</html>

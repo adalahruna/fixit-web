@@ -1,9 +1,11 @@
 'use server';
 
 import { createClient } from '../supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidateBookingPaths } from '../utils/revalidation';
 import { localToUTC } from '../utils/datetime';
 import { checkSlotAvailability } from '../utils/slot-availability';
+import { logAuditActivity } from '../audit/actions';
+import { AUDIT_ACTIONS, AUDIT_ENTITIES } from '../audit/constants';
 
 export async function rescheduleBooking(
   bookingId: string,
@@ -56,6 +58,16 @@ export async function rescheduleBooking(
   const newScheduleStart = localToUTC(newDate, newTime);
   const newScheduleStartDate = new Date(newScheduleStart);
 
+  // Validate operational hours (08:00 - 17:00 WIB)
+  const [hours, minutes] = newTime.split(':').map(Number);
+  const timeInMinutes = hours * 60 + minutes;
+  const startTime = 8 * 60; // 08:00
+  const endTime = 17 * 60; // 17:00
+
+  if (timeInMinutes < startTime || timeInMinutes > endTime) {
+    return { error: 'Jam operasional: 08:00 - 17:00 WIB' };
+  }
+
   // Calculate estimated duration
   const estimatedDuration = booking.booking_services && booking.booking_services.length > 0
     ? booking.booking_services.reduce(
@@ -90,11 +102,26 @@ export async function rescheduleBooking(
     return { error: updateError.message };
   }
 
+  // Log audit activity (non-blocking)
+  try {
+    await logAuditActivity(
+      AUDIT_ACTIONS.RESCHEDULE_BOOKING,
+      AUDIT_ENTITIES.BOOKING,
+      bookingId,
+      {
+        original_schedule_start: booking.schedule_start,
+        original_schedule_end: booking.schedule_end,
+        new_schedule_start: newScheduleStart,
+        new_schedule_end: newScheduleEnd
+      }
+    );
+  } catch (auditError) {
+    // Log audit error but don't block the operation
+    console.error('Failed to log audit activity for reschedule:', auditError);
+  }
+
   // Revalidate paths
-  revalidatePath('/customer/bookings');
-  revalidatePath(`/customer/bookings/${bookingId}`);
-  revalidatePath('/admin/bookings');
-  revalidatePath(`/admin/bookings/${bookingId}`);
+  revalidateBookingPaths(bookingId);
 
   return { success: true, message: 'Booking berhasil di-reschedule' };
 }

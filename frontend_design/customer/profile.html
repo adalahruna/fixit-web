@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Budi Santoso</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f4f5f8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            /* Untuk penempatan tombol kembali & logout */
+            color: #111827;
+        }
+
+        /* --- Tombol Kembali & Log Out --- */
+        .btn-back {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+        }
+
+        .btn-back:hover {
+            opacity: 0.7;
+        }
+
+        .btn-logout {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            background: none;
+            border: none;
+            color: #ef4444;
+            /* Warna merah */
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-logout:hover {
+            opacity: 0.8;
+        }
+
+        .btn-logout svg {
+            stroke: #ef4444;
+        }
+
+        /* --- Container Utama --- */
+        .profile-container {
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding: 20px;
+        }
+
+        /* Global Card Style */
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #eef0f4;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        /* --- Card 1: Header Profile --- */
+        .profile-header-card {
+            padding: 24px 32px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .camera-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            background-color: #0052ff;
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            border: 2.5px solid #ffffff;
+            cursor: pointer;
+        }
+
+        .profile-info {
+            flex-grow: 1;
+        }
+
+        .profile-info h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .profile-info p {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .btn-edit {
+            background-color: #0052ff;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-edit:hover {
+            background-color: #0044d6;
+        }
+
+        /* --- Card 2: Informasi Pribadi --- */
+        .personal-info-card {
+            padding: 30px 32px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 25px;
+        }
+
+        .section-title svg {
+            color: #0052ff;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            row-gap: 25px;
+            column-gap: 40px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .info-item label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item p {
+            font-size: 15px;
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #f1f5f9;
+            margin: 25px 0 20px;
+            border: none;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+            /* Mengambil lebar penuh (spanning all columns) */
+        }
+
+        /* Responsivitas untuk layar kecil */
+        @media (max-width: 600px) {
+
+            .btn-back,
+            .btn-logout {
+                position: static;
+                margin-left: 20px;
+                margin-top: 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-header-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .btn-edit {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="btn-back">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="21" y1="12" x2="3" y2="12"></line>
+            <polyline points="10 19 3 12 10 5"></polyline>
+        </svg>
+    </button>
+
+    <a href="#" class="btn-logout">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Log Out
+    </a>
+
+    <div class="profile-container">
+
+        <div class="card profile-header-card">
+
+            <div class="avatar-wrapper">
+                <img src="https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg"
+                    alt="Avatar" class="avatar-image">
+                <div class="camera-badge">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <h1>Budi Santoso</h1>
+                <p>Bergabung sejak Jan 2023</p>
+            </div>
+
+            <button class="btn-edit">
+                <i class="fa-solid fa-pen"></i> Edit Profil
+            </button>
+
+        </div>
+
+        <div class="card personal-info-card">
+
+            <div class="section-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0052ff" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                    <circle cx="12" cy="10" r="3"></circle>
+                    <path d="M7 20v-2c0-1.7 3.3-3 5-3s5 1.3 5 3v2"></path>
+                </svg>
+                Informasi Pribadi
+            </div>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <label>NAMA LENGKAP</label>
+                    <p>Budi Santoso</p>
+                </div>
+
+                <div class="info-item">
+                    <label>ALAMAT EMAIL</label>
+                    <p>budi.santoso@email.com</p>
+                </div>
+
+                <div class="info-item">
+                    <label>NOMOR TELEPON</label>
+                    <p>+62 812-3456-7890</p>
+                </div>
+
+                <div class="info-item">
+                    <label>ID MEMBER</label>
+                    <p>SA-992104</p>
+                </div>
+
+            </div>
+
+            <hr class="divider">
+
+            <div class="info-item full-width">
+                <label>ALAMAT LENGKAP</label>
+                <p>Jl. Merdeka No. 123, Blok C, Kebayoran Baru, Jakarta Selatan, 12110</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
