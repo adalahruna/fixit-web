@@ -23,18 +23,18 @@ const mockSupabase = {
 };
 
 // Import functions to test
-import { validateSlotAvailability } from '@/lib/utils/slot-availability';
+import { checkSlotAvailability } from '@/lib/utils/slot-availability';
 import { calculateSLAStatus } from '@/lib/utils/sla-calculation';
 import { detectMechanicOverload } from '@/lib/utils/overload-detection';
 
 describe('Slot Availability Tests', () => {
   it('should return false when no mechanics are active', async () => {
-    const result = await validateSlotAvailability(
-      new Date('2026-03-20T09:00:00Z'),
-      new Date('2026-03-20T10:00:00Z')
+    const result = await checkSlotAvailability(
+      '2026-03-20T09:00:00Z',
+      60 // 60 minutes duration
     );
-    expect(result.isAvailable).toBe(false);
-    expect(result.reason).toContain('No active mechanics');
+    expect(result.available).toBe(false);
+    expect(result.message).toContain('mekanik');
   });
 
   it('should validate time slot format correctly', () => {

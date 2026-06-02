@@ -145,6 +145,9 @@ export async function createMechanic(_prevState: unknown, formData: FormData) {
 
 export async function updateMechanic(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
+  
+  // Get current user for audit logging
+  const { data: { user } } = await supabase.auth.getUser();
 
   const id = formData.get('id') as string;
   const data = {
@@ -265,6 +268,9 @@ export async function updateMechanic(_prevState: unknown, formData: FormData) {
  */
 export async function deleteMechanic(id: string) {
   const supabase = await createClient();
+  
+  // Get current user for audit logging
+  const { data: { user } } = await supabase.auth.getUser();
 
   try {
     // Check if mechanic has active or pending assignments
