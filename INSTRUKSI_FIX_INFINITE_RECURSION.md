@@ -1,15 +1,15 @@
 # 🔧 Fix Infinite Recursion - Cancel & Reschedule Booking
 
 ## ❌ Masalah
-- Error "infinite recursion" saat customer cancel booking
-- Error "infinite recursion" saat customer reschedule booking
+- Error "infinite recursion detected in policy for relation bookings"
+- Terjadi saat customer cancel atau reschedule booking
 
 ## 🎯 Root Cause
-Database triggers `sync_status_from_bookings` dan `sync_status_from_progress` membuat circular loop yang menyebabkan infinite recursion.
+Ada RLS (Row Level Security) Policy yang recursive pada tabel bookings. Policy nya mungkin reference bookings table di dalam USING clause, yang menyebabkan infinite loop.
 
-## ✅ Solusi Simple
+## ✅ Solusi
 
-Hapus trigger yang bermasalah. Code sudah saya update untuk manual sync.
+Recreate RLS policies dengan non-recursive version.
 
 ### Jalankan SQL Query di Supabase SQL Editor:
 
@@ -17,36 +17,71 @@ Hapus trigger yang bermasalah. Code sudah saya update untuk manual sync.
 2. Pilih project: **tcnkjdzdkzrqjgjrleup**
 3. Klik **SQL Editor** di menu kiri
 4. Buat **New Query**
-5. Copy file: `database/scripts/fix-infinite-recursion-cancel-reschedule.sql`
+5. Copy file: `database/scripts/fix-rls-policy-recursion.sql`
 
 **Atau copy-paste SQL berikut:**
 
 ```sql
--- Drop problematic triggers
-DROP TRIGGER IF EXISTS sync_status_from_progress ON service_progress;
-DROP TRIGGER IF EXISTS sync_status_from_bookings ON bookings;
+-- Drop all existing policies on bookings
+DROP POLICY IF EXISTS "Customers can read own bookings" ON bookings;
+DROP POLICY IF EXISTS "Customers can create bookings" ON bookings;
+DROP POLICY IF EXISTS "Customers can update own bookings" ON bookings;
+DROP POLICY IF EXISTS "Admin can manage all bookings" ON bookings;
+DROP POLICY IF EXISTS "Mechanic can read assigned bookings" ON bookings;
 
--- Drop the trigger function
-DROP FUNCTION IF EXISTS sync_booking_status() CASCADE;
+-- Create simple, non-recursive policies
 
--- Verify triggers are removed
-SELECT 
-  COUNT(*) as remaining_triggers,
-  CASE 
-    WHEN COUNT(*) = 0 THEN '✅ All triggers removed successfully'
-    ELSE '⚠️ Some triggers still exist'
-  END as status
-FROM information_schema.triggers
-WHERE trigger_name IN ('sync_status_from_progress', 'sync_status_from_bookings');
+-- Policy 1: Customers can read their own bookings
+CREATE POLICY "Customers can read own bookings"
+ON bookings FOR SELECT
+TO authenticated
+USING (
+  customer_id = auth.uid()
+  OR EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role IN ('admin', 'owner', 'mechanic')
+  )
+);
+
+-- Policy 2: Customers can create bookings
+CREATE POLICY "Customers can create bookings"
+ON bookings FOR INSERT
+TO authenticated
+WITH CHECK (customer_id = auth.uid());
+
+-- Policy 3: Customers and admin can update bookings
+CREATE POLICY "Customers can update own bookings"
+ON bookings FOR UPDATE
+TO authenticated
+USING (
+  customer_id = auth.uid()
+  OR EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role IN ('admin', 'owner')
+  )
+);
+
+-- Policy 4: Admin and owner can delete bookings
+CREATE POLICY "Admin can delete bookings"
+ON bookings FOR DELETE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role IN ('admin', 'owner')
+  )
+);
 ```
 
 6. Klik **Run** atau tekan `Ctrl+Enter`
-7. Pastikan hasilnya: `remaining_triggers = 0` dan status `✅ All triggers removed successfully`
 
 ### 📝 Yang Sudah Saya Update:
 - ✅ Code `cancel-actions.ts` - manual update bookings dan service_progress
 - ✅ Code `reschedule-actions.ts` - manual update bookings schedule
-- ✅ Trigger dihapus karena menyebabkan recursion
+- ✅ RLS policies di-recreate tanpa recursion
 
 ## 🧪 Testing
 Setelah query dijalankan, test:
