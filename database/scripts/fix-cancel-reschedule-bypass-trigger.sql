@@ -1,29 +1,10 @@
-# 🔧 Fix Infinite Recursion - Cancel & Reschedule Booking
+-- ============================================
+-- FIX: Cancel & Reschedule Bypass Trigger
+-- ============================================
+-- Alternative solution: Create RPC functions that bypass triggers
+-- This is a temporary workaround if dropping triggers is not possible
+-- ============================================
 
-## ❌ Masalah
-- Error "infinite recursion" saat customer cancel booking
-- Error "infinite recursion" saat customer reschedule booking
-
-## 🎯 Root Cause
-Database triggers `sync_status_from_bookings` dan `sync_status_from_progress` membuat loop:
-1. Update `bookings.status` → trigger fires
-2. Update `service_progress.status` → trigger fires
-3. Update `bookings.status` lagi → infinite loop!
-
-## ✅ Solusi
-
-Saya sudah membuat RPC functions yang bypass triggers. Jalankan SQL berikut:
-
-### Jalankan SQL Query di Supabase SQL Editor:
-
-1. Buka Supabase Dashboard: https://supabase.com/dashboard
-2. Pilih project: **tcnkjdzdkzrqjgjrleup**
-3. Klik **SQL Editor** di menu kiri
-4. Buat **New Query**
-5. Copy file: `database/scripts/fix-cancel-reschedule-bypass-trigger.sql`
-6. Atau copy-paste SQL berikut:
-
-```sql
 -- Function to cancel booking without triggering sync
 CREATE OR REPLACE FUNCTION cancel_booking_bypass_trigger(
   p_booking_id UUID
@@ -106,23 +87,3 @@ GRANT EXECUTE ON FUNCTION cancel_booking_bypass_trigger TO authenticated;
 GRANT EXECUTE ON FUNCTION reschedule_booking_bypass_trigger TO authenticated;
 
 SELECT '✅ Bypass functions created successfully!' as result;
-```
-
-7. Klik **Run** atau tekan `Ctrl+Enter`
-8. Pastikan hasilnya: `✅ Bypass functions created successfully!`
-
-### 📝 Yang Sudah Saya Update:
-- ✅ Code `cancel-actions.ts` - menggunakan RPC function `cancel_booking_bypass_trigger`
-- ✅ Code `reschedule-actions.ts` - menggunakan RPC function `reschedule_booking_bypass_trigger`
-- ✅ RPC functions akan disable triggers sementara, update data, lalu enable lagi
-
-## 🧪 Testing
-Setelah query dijalankan, test:
-1. Login sebagai customer
-2. Buat booking baru (belum di-assign mekanik)
-3. Coba **Cancel** booking → harus berhasil tanpa error
-4. Buat booking baru lagi
-5. Coba **Reschedule** booking → harus berhasil tanpa error
-
-## ✅ Done!
-Setelah SQL query dijalankan, bug infinite recursion akan hilang permanently.
