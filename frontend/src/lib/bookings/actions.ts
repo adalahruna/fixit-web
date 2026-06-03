@@ -2,7 +2,6 @@
 
 import { createClient } from '../supabase/server';
 import { revalidateBookingPaths } from '../utils/revalidation';
-import { redirect } from 'next/navigation';
 import { localToUTC } from '../utils/datetime';
 import { checkSlotAvailability } from '../utils/slot-availability';
 import { logAuditActivity } from '@/lib/audit/actions';
@@ -223,5 +222,7 @@ export async function createBooking(_prevState: unknown, formData: FormData) {
   );
 
   revalidateBookingPaths(booking.id);
-  redirect('/customer/bookings');
+  
+  // Return success instead of redirect - let client handle redirect with toast
+  return { success: true, bookingId: booking.id };
 }

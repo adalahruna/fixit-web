@@ -1,9 +1,11 @@
 'use client';
 
 import { useActionState, useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { createBooking } from '@/lib/bookings/actions';
 import { localToUTC } from '@/lib/utils/datetime';
 import { validateIndonesianPlate } from '@/lib/utils/plate-validation';
+import { Toast } from '@/components/ui';
 
 interface ServiceType {
   id: string;
@@ -33,6 +35,8 @@ const serviceIcons: Record<string, string> = {
 
 export default function BookingFormClient({ services }: BookingFormProps) {
   const [state, formAction] = useActionState(createBooking, null);
+  const router = useRouter();
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -252,6 +256,17 @@ export default function BookingFormClient({ services }: BookingFormProps) {
     setPhotoPreview(null);
     setPhotoError('');
   };
+
+  // Handle success booking
+  useEffect(() => {
+    if (state?.success) {
+      setShowSuccessToast(true);
+      // Redirect after toast shown
+      setTimeout(() => {
+        router.push('/customer/bookings');
+      }, 1500);
+    }
+  }, [state, router]);
 
   return (
     <div className="flex gap-8 items-start">
@@ -586,6 +601,14 @@ export default function BookingFormClient({ services }: BookingFormProps) {
           </div>
         </div>
       </div>
+
+      {showSuccessToast && (
+        <Toast
+          message="Booking berhasil dibuat! Menunggu konfirmasi admin..."
+          variant="success"
+          onClose={() => setShowSuccessToast(false)}
+        />
+      )}
     </div>
   );
 }

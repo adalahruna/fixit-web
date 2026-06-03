@@ -1,9 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { startService, completeService } from '@/lib/progress/actions';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui';
+import { Button, Toast } from '@/components/ui';
 
 function SubmitButton({ label, pending }: { label: string; pending: boolean }) {
   return (
@@ -33,33 +34,50 @@ function CompleteButton({ pending }: { pending: boolean }) {
 
 export function StartServiceButton({ bookingId }: { bookingId: string }) {
   const router = useRouter();
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   async function handleStart(_formData: FormData) {
     const result = await startService(bookingId);
     
-    // Log result for debugging
-    console.log('Start service result:', result);
-    
     if (result.error) {
-      // Show error to user
-      alert(`Error: ${result.error}`);
+      setErrorMessage(result.error);
+      setShowErrorToast(true);
       return;
     }
     
     if (result.success) {
-      // Force refresh current page
-      router.refresh();
-      // Small delay then refresh again to ensure cache is cleared
+      setShowSuccessToast(true);
+      // Delay refresh to show toast
       setTimeout(() => {
         router.refresh();
-      }, 100);
+      }, 500);
     }
   }
 
   return (
-    <form action={handleStart}>
-      <StartButton />
-    </form>
+    <>
+      <form action={handleStart}>
+        <StartButton />
+      </form>
+      
+      {showSuccessToast && (
+        <Toast
+          message="Servis dimulai! Status diupdate."
+          variant="success"
+          onClose={() => setShowSuccessToast(false)}
+        />
+      )}
+      
+      {showErrorToast && (
+        <Toast
+          message={errorMessage}
+          variant="error"
+          onClose={() => setShowErrorToast(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -70,33 +88,50 @@ function StartButton() {
 
 export function CompleteServiceButton({ bookingId }: { bookingId: string }) {
   const router = useRouter();
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   async function handleComplete(_formData: FormData) {
     const result = await completeService(bookingId);
     
-    // Log result for debugging
-    console.log('Complete service result:', result);
-    
     if (result.error) {
-      // Show error to user
-      alert(`Error: ${result.error}`);
+      setErrorMessage(result.error);
+      setShowErrorToast(true);
       return;
     }
     
     if (result.success) {
-      // Force refresh current page
-      router.refresh();
-      // Small delay then refresh again to ensure cache is cleared
+      setShowSuccessToast(true);
+      // Delay refresh to show toast
       setTimeout(() => {
         router.refresh();
-      }, 100);
+      }, 500);
     }
   }
 
   return (
-    <form action={handleComplete}>
-      <CompleteButtonInner />
-    </form>
+    <>
+      <form action={handleComplete}>
+        <CompleteButtonInner />
+      </form>
+      
+      {showSuccessToast && (
+        <Toast
+          message="Servis selesai! Booking telah diselesaikan."
+          variant="success"
+          onClose={() => setShowSuccessToast(false)}
+        />
+      )}
+      
+      {showErrorToast && (
+        <Toast
+          message={errorMessage}
+          variant="error"
+          onClose={() => setShowErrorToast(false)}
+        />
+      )}
+    </>
   );
 }
 

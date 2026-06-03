@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { assignMechanic, unassignMechanic } from '@/lib/assignments/actions';
+import { Toast } from '@/components/ui';
 
 interface Mechanic {
   id: string;
@@ -24,6 +25,8 @@ export function AssignMechanicForm({
   const [selectedMechanicId, setSelectedMechanicId] = useState(currentMechanicId || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleAssign = async () => {
     if (!selectedMechanicId) {
@@ -38,11 +41,14 @@ export function AssignMechanicForm({
     
     if (result.error) {
       setError(result.error);
+      setLoading(false);
     } else {
-      window.location.reload();
+      setSuccessMessage('Mekanik berhasil di-assign!');
+      setShowSuccessToast(true);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
-    
-    setLoading(false);
   };
 
   const handleUnassign = async () => {
@@ -57,11 +63,14 @@ export function AssignMechanicForm({
     
     if (result.error) {
       setError(result.error);
+      setLoading(false);
     } else {
-      window.location.reload();
+      setSuccessMessage('Mekanik berhasil di-unassign!');
+      setShowSuccessToast(true);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -111,6 +120,14 @@ export function AssignMechanicForm({
           </button>
         )}
       </div>
+
+      {showSuccessToast && (
+        <Toast
+          message={successMessage}
+          variant="success"
+          onClose={() => setShowSuccessToast(false)}
+        />
+      )}
     </div>
   );
 }
