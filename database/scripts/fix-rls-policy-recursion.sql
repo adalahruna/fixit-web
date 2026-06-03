@@ -2,7 +2,8 @@
 -- FIX: RLS Policy Recursion on Bookings Table
 -- ============================================
 -- Issue: "infinite recursion detected in policy for relation bookings"
--- This happens when a policy references the same table it's protecting
+-- Root cause: Policy yang terlalu kompleks atau reference bookings di dalam check
+-- Solution: Simplify policies untuk avoid recursion
 -- ============================================
 
 -- Step 1: Check current policies on bookings table
@@ -12,9 +13,7 @@ SELECT
   policyname,
   permissive,
   roles,
-  cmd,
-  qual,
-  with_check
+  cmd
 FROM pg_policies
 WHERE tablename = 'bookings'
 ORDER BY policyname;
@@ -25,11 +24,13 @@ DROP POLICY IF EXISTS "Customers can create bookings" ON bookings;
 DROP POLICY IF EXISTS "Customers can update own bookings" ON bookings;
 DROP POLICY IF EXISTS "Admin can manage all bookings" ON bookings;
 DROP POLICY IF EXISTS "Mechanic can read assigned bookings" ON bookings;
+DROP POLICY IF EXISTS "Admin can delete bookings" ON bookings;
 
--- Step 3: Create simple, non-recursive policies
+-- Step 3: Create SIMPLE, non-recursive policies
+-- Key: Avoid subqueries that reference bookings table
 
--- Policy 1: Customers can read their own bookings
-CREATE POLICY "Customers can read own bookings"
+-- Policy 1: SELECT - Customers read own, staff read all
+CREATE POLICY "bookings_select_policy"
 ON bookings FOR SELECT
 TO authenticated
 USING (
@@ -41,15 +42,14 @@ USING (
   )
 );
 
--- Policy 2: Customers can create bookings
-CREATE POLICY "Customers can create bookings"
+-- Policy 2: INSERT - Customers can create their own bookings
+CREATE POLICY "bookings_insert_policy"
 ON bookings FOR INSERT
 TO authenticated
 WITH CHECK (customer_id = auth.uid());
 
--- Policy 3: Customers and admin can update bookings
--- IMPORTANT: No recursive check on bookings table itself
-CREATE POLICY "Customers can update own bookings"
+-- Policy 3: UPDATE - Customers update own, admin/owner update all
+CREATE POLICY "bookings_update_policy"
 ON bookings FOR UPDATE
 TO authenticated
 USING (
@@ -59,10 +59,18 @@ USING (
     WHERE users.id = auth.uid()
     AND users.role IN ('admin', 'owner')
   )
+)
+WITH CHECK (
+  customer_id = auth.uid()
+  OR EXISTS (
+    SELECT 1 FROM users
+    WHERE users.id = auth.uid()
+    AND users.role IN ('admin', 'owner')
+  )
 );
 
--- Policy 4: Admin and owner can delete bookings
-CREATE POLICY "Admin can delete bookings"
+-- Policy 4: DELETE - Only admin/owner
+CREATE POLICY "bookings_delete_policy"
 ON bookings FOR DELETE
 TO authenticated
 USING (
@@ -89,5 +97,4 @@ FROM pg_policies
 WHERE tablename = 'bookings'
 ORDER BY policyname;
 
-SELECT '✅ RLS policies recreated successfully!' as result,
-       'Cancel and reschedule should now work' as note;
+SELECT '✅ RLS policies recreated - recursion fixed!' as result;

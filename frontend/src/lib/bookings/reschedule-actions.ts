@@ -20,20 +20,16 @@ export async function rescheduleBooking(
     return { error: 'Unauthorized' };
   }
 
-  // Get booking details
+  // Get booking details - filter by customer_id immediately
   const { data: booking, error: fetchError } = await supabase
     .from('bookings')
     .select('*, booking_services(service_type:service_types(default_duration_minutes))')
     .eq('id', bookingId)
+    .eq('customer_id', user.id) // Add this to filter immediately
     .single();
 
   if (fetchError || !booking) {
-    return { error: 'Booking tidak ditemukan' };
-  }
-
-  // Check ownership (customer can only reschedule their own booking)
-  if (booking.customer_id !== user.id) {
-    return { error: 'Anda tidak memiliki akses untuk reschedule booking ini' };
+    return { error: 'Booking tidak ditemukan atau Anda tidak memiliki akses' };
   }
 
   // BR-04: Check status - cannot reschedule if in_progress or done
@@ -96,7 +92,8 @@ export async function rescheduleBooking(
       schedule_end: newScheduleEnd,
       updated_at: new Date().toISOString(),
     })
-    .eq('id', bookingId);
+    .eq('id', bookingId)
+    .eq('customer_id', user.id); // Add this to ensure ownership
 
   if (updateError) {
     return { error: updateError.message };

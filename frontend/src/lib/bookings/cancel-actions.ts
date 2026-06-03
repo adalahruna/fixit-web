@@ -15,20 +15,16 @@ export async function cancelBooking(bookingId: string) {
     return { error: 'Unauthorized' };
   }
 
-  // Get booking to validate
+  // Get booking to validate - use single query with minimal fields
   const { data: booking, error: fetchError } = await supabase
     .from('bookings')
     .select('customer_id, schedule_start, status')
     .eq('id', bookingId)
+    .eq('customer_id', user.id) // Add this to filter immediately
     .single();
 
   if (fetchError || !booking) {
-    return { error: 'Booking tidak ditemukan' };
-  }
-
-  // Validate ownership
-  if (booking.customer_id !== user.id) {
-    return { error: 'Anda tidak memiliki akses ke booking ini' };
+    return { error: 'Booking tidak ditemukan atau Anda tidak memiliki akses' };
   }
 
   // Validate status - only pending, confirmed, or queued can be cancelled
@@ -53,7 +49,8 @@ export async function cancelBooking(bookingId: string) {
       status: 'cancelled',
       updated_at: new Date().toISOString()
     })
-    .eq('id', bookingId);
+    .eq('id', bookingId)
+    .eq('customer_id', user.id); // Add this to ensure ownership
 
   if (updateError) {
     return { error: 'Gagal membatalkan booking: ' + updateError.message };
