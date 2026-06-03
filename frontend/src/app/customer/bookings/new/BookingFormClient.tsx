@@ -270,7 +270,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
           
           <div className="grid grid-cols-2 gap-5">
             <div>
-              <label htmlFor="vehicle_type" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
+              <label htmlFor="vehicle_type" className="block text-sm font-bold text-gray-900 mb-2">
                 Merk & Model
               </label>
               <input
@@ -286,7 +286,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </div>
 
             <div>
-              <label htmlFor="vehicle_plate" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
+              <label htmlFor="vehicle_plate" className="block text-sm font-bold text-gray-900 mb-2">
                 Nomor Polisi
               </label>
               <input
@@ -364,7 +364,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
 
           <div className="grid grid-cols-2 gap-5 mb-6">
             <div>
-              <label htmlFor="scheduled_date" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
+              <label htmlFor="scheduled_date" className="block text-sm font-bold text-gray-900 mb-2">
                 Tanggal
               </label>
               <input
@@ -380,7 +380,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </div>
 
             <div>
-              <label htmlFor="scheduled_time" className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">
+              <label htmlFor="scheduled_time" className="block text-sm font-bold text-gray-900 mb-2">
                 Jam (WIB)
               </label>
               <input
@@ -439,7 +439,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
 
           {/* Photo Upload Section */}
           <div className="mt-5">
-            <label className="block text-xs font-bold text-gray-900 uppercase tracking-wide mb-3">
+            <label className="block text-sm font-bold text-gray-900 mb-3">
               Foto Keluhan (Opsional)
             </label>
             
@@ -550,7 +550,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
           <div className="h-px bg-gray-200 my-5"></div>
 
           <div className="flex justify-between items-center mb-6">
-            <span className="text-sm font-bold">Estimasi Total</span>
+            <span className="text-sm font-bold text-gray-900">Estimasi Total</span>
             <span className="text-2xl font-extrabold text-blue-600">
               {totalPrice > 0 ? `Rp ${totalPrice.toLocaleString('id-ID')}` : 'Rp -'}
             </span>

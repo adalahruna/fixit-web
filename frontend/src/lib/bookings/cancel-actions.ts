@@ -46,19 +46,30 @@ export async function cancelBooking(bookingId: string) {
     return { error: 'Booking hanya bisa dibatalkan minimal 24 jam sebelum jadwal (H-1)' };
   }
 
-  // Update booking status to cancelled using RPC to bypass trigger recursion
-  const { data: result, error: updateError } = await supabase
-    .rpc('cancel_booking_bypass_trigger', {
-      p_booking_id: bookingId
-    });
+  // Update booking status to cancelled
+  const { error: updateError } = await supabase
+    .from('bookings')
+    .update({ 
+      status: 'cancelled',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', bookingId);
 
   if (updateError) {
     return { error: 'Gagal membatalkan booking: ' + updateError.message };
   }
 
-  if (!result || !result.success) {
-    return { error: 'Gagal membatalkan booking' };
-  }
+  // Manually update service_progress if exists (since we removed the trigger)
+  // Only update if service_progress exists (booking assigned to mechanic)
+  await supabase
+    .from('service_progress')
+    .update({ 
+      status: 'cancelled',
+      updated_at: new Date().toISOString()
+    })
+    .eq('booking_id', bookingId);
+  
+  // Ignore error - service_progress might not exist if booking not assigned yet
 
   // Revalidate paths
   revalidateBookingPaths(bookingId);

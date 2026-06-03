@@ -88,20 +88,18 @@ export async function rescheduleBooking(
     return { error: slotCheck.message || 'Slot tidak tersedia untuk jadwal baru' };
   }
 
-  // Update booking schedule using RPC to bypass trigger recursion
-  const { data: result, error: updateError } = await supabase
-    .rpc('reschedule_booking_bypass_trigger', {
-      p_booking_id: bookingId,
-      p_schedule_start: newScheduleStart,
-      p_schedule_end: newScheduleEnd
-    });
+  // Update booking schedule
+  const { error: updateError } = await supabase
+    .from('bookings')
+    .update({
+      schedule_start: newScheduleStart,
+      schedule_end: newScheduleEnd,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', bookingId);
 
   if (updateError) {
     return { error: updateError.message };
-  }
-
-  if (!result || !result.success) {
-    return { error: 'Gagal reschedule booking' };
   }
 
   // Log audit activity (non-blocking)

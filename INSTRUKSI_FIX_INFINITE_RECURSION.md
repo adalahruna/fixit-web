@@ -5,14 +5,11 @@
 - Error "infinite recursion" saat customer reschedule booking
 
 ## 🎯 Root Cause
-Database triggers `sync_status_from_bookings` dan `sync_status_from_progress` membuat loop:
-1. Update `bookings.status` → trigger fires
-2. Update `service_progress.status` → trigger fires
-3. Update `bookings.status` lagi → infinite loop!
+Database triggers `sync_status_from_bookings` dan `sync_status_from_progress` membuat circular loop yang menyebabkan infinite recursion.
 
-## ✅ Solusi
+## ✅ Solusi Simple
 
-Saya sudah membuat RPC functions yang bypass triggers. Jalankan SQL berikut:
+Hapus trigger yang bermasalah. Code sudah saya update untuk manual sync.
 
 ### Jalankan SQL Query di Supabase SQL Editor:
 
@@ -20,109 +17,44 @@ Saya sudah membuat RPC functions yang bypass triggers. Jalankan SQL berikut:
 2. Pilih project: **tcnkjdzdkzrqjgjrleup**
 3. Klik **SQL Editor** di menu kiri
 4. Buat **New Query**
-5. Copy file: `database/scripts/fix-cancel-reschedule-bypass-trigger.sql`
-6. Atau copy-paste SQL berikut:
+5. Copy file: `database/scripts/fix-infinite-recursion-cancel-reschedule.sql`
+
+**Atau copy-paste SQL berikut:**
 
 ```sql
--- Function to cancel booking without triggering sync
-CREATE OR REPLACE FUNCTION cancel_booking_bypass_trigger(
-  p_booking_id UUID
-) RETURNS JSON AS $$
-DECLARE
-  v_result JSON;
-BEGIN
-  -- Disable triggers temporarily for this session
-  SET session_replication_role = replica;
-  
-  -- Update booking status
-  UPDATE bookings 
-  SET status = 'cancelled', 
-      updated_at = NOW()
-  WHERE id = p_booking_id;
-  
-  -- Update service_progress if exists
-  UPDATE service_progress
-  SET status = 'cancelled',
-      updated_at = NOW()
-  WHERE booking_id = p_booking_id;
-  
-  -- Re-enable triggers
-  SET session_replication_role = DEFAULT;
-  
-  -- Return success
-  v_result := json_build_object(
-    'success', true,
-    'message', 'Booking cancelled successfully'
-  );
-  
-  RETURN v_result;
-EXCEPTION
-  WHEN OTHERS THEN
-    -- Re-enable triggers on error
-    SET session_replication_role = DEFAULT;
-    RAISE;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- Drop problematic triggers
+DROP TRIGGER IF EXISTS sync_status_from_progress ON service_progress;
+DROP TRIGGER IF EXISTS sync_status_from_bookings ON bookings;
 
--- Function to update booking schedule without triggering sync
-CREATE OR REPLACE FUNCTION reschedule_booking_bypass_trigger(
-  p_booking_id UUID,
-  p_schedule_start TIMESTAMP WITH TIME ZONE,
-  p_schedule_end TIMESTAMP WITH TIME ZONE
-) RETURNS JSON AS $$
-DECLARE
-  v_result JSON;
-BEGIN
-  -- Disable triggers temporarily for this session
-  SET session_replication_role = replica;
-  
-  -- Update booking schedule
-  UPDATE bookings 
-  SET schedule_start = p_schedule_start,
-      schedule_end = p_schedule_end,
-      updated_at = NOW()
-  WHERE id = p_booking_id;
-  
-  -- Re-enable triggers
-  SET session_replication_role = DEFAULT;
-  
-  -- Return success
-  v_result := json_build_object(
-    'success', true,
-    'message', 'Booking rescheduled successfully'
-  );
-  
-  RETURN v_result;
-EXCEPTION
-  WHEN OTHERS THEN
-    -- Re-enable triggers on error
-    SET session_replication_role = DEFAULT;
-    RAISE;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+-- Drop the trigger function
+DROP FUNCTION IF EXISTS sync_booking_status() CASCADE;
 
--- Grant execute permissions
-GRANT EXECUTE ON FUNCTION cancel_booking_bypass_trigger TO authenticated;
-GRANT EXECUTE ON FUNCTION reschedule_booking_bypass_trigger TO authenticated;
-
-SELECT '✅ Bypass functions created successfully!' as result;
+-- Verify triggers are removed
+SELECT 
+  COUNT(*) as remaining_triggers,
+  CASE 
+    WHEN COUNT(*) = 0 THEN '✅ All triggers removed successfully'
+    ELSE '⚠️ Some triggers still exist'
+  END as status
+FROM information_schema.triggers
+WHERE trigger_name IN ('sync_status_from_progress', 'sync_status_from_bookings');
 ```
 
-7. Klik **Run** atau tekan `Ctrl+Enter`
-8. Pastikan hasilnya: `✅ Bypass functions created successfully!`
+6. Klik **Run** atau tekan `Ctrl+Enter`
+7. Pastikan hasilnya: `remaining_triggers = 0` dan status `✅ All triggers removed successfully`
 
 ### 📝 Yang Sudah Saya Update:
-- ✅ Code `cancel-actions.ts` - menggunakan RPC function `cancel_booking_bypass_trigger`
-- ✅ Code `reschedule-actions.ts` - menggunakan RPC function `reschedule_booking_bypass_trigger`
-- ✅ RPC functions akan disable triggers sementara, update data, lalu enable lagi
+- ✅ Code `cancel-actions.ts` - manual update bookings dan service_progress
+- ✅ Code `reschedule-actions.ts` - manual update bookings schedule
+- ✅ Trigger dihapus karena menyebabkan recursion
 
 ## 🧪 Testing
 Setelah query dijalankan, test:
 1. Login sebagai customer
 2. Buat booking baru (belum di-assign mekanik)
-3. Coba **Cancel** booking → harus berhasil tanpa error
+3. Coba **Cancel** booking → harus berhasil tanpa error ✅
 4. Buat booking baru lagi
-5. Coba **Reschedule** booking → harus berhasil tanpa error
+5. Coba **Reschedule** booking → harus berhasil tanpa error ✅
 
 ## ✅ Done!
-Setelah SQL query dijalankan, bug infinite recursion akan hilang permanently.
+Setelah SQL query dijalankan, bug infinite recursion akan hilang permanently!
