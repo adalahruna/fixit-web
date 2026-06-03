@@ -70,7 +70,7 @@ export async function detectMechanicOverload(): Promise<OverloadDetectionResult>
           id,
           schedule_start,
           status,
-          booking_services(
+          booking_services!inner(
             duration_minutes
           )
         )
@@ -78,7 +78,7 @@ export async function detectMechanicOverload(): Promise<OverloadDetectionResult>
       .eq('mechanic_id', mechanic.id)
       .gte('booking.schedule_start', startOfDay.toISOString())
       .lt('booking.schedule_start', endOfDay.toISOString())
-      .in('booking.status', ['queued', 'in_progress']);
+      .in('booking.status', ['confirmed', 'in_progress']);
 
     if (assignmentsError) {
       console.error(`Error fetching assignments for mechanic ${mechanic.id}:`, assignmentsError);
@@ -86,13 +86,13 @@ export async function detectMechanicOverload(): Promise<OverloadDetectionResult>
     }
 
     const bookings = (assignments as unknown as AssignmentData[])?.map(a => a.booking) || [];
-    const queuedBookings = bookings.filter((b: BookingData) => b.status === 'queued').length;
+    const queuedBookings = bookings.filter((b: BookingData) => b.status === 'confirmed').length;
     const inProgressBookings = bookings.filter((b: BookingData) => b.status === 'in_progress').length;
     
     // Calculate total workload in minutes by summing service durations
     let totalWorkloadMinutes = 0;
     for (const booking of bookings) {
-      if (booking.booking_services && Array.isArray(booking.booking_services)) {
+      if (booking.booking_services && Array.isArray(booking.booking_services) && booking.booking_services.length > 0) {
         const bookingDuration = booking.booking_services.reduce((sum: number, bs: { duration_minutes: number }) => sum + (bs.duration_minutes || 60), 0);
         totalWorkloadMinutes += bookingDuration;
       } else {
@@ -164,7 +164,7 @@ export async function getMechanicOverloadStatus(mechanicId: string): Promise<Ove
         id,
         schedule_start,
         status,
-        booking_services(
+        booking_services!inner(
           duration_minutes
         )
       )
@@ -172,10 +172,11 @@ export async function getMechanicOverloadStatus(mechanicId: string): Promise<Ove
     .eq('mechanic_id', mechanic.id)
     .gte('booking.schedule_start', startOfDay.toISOString())
     .lt('booking.schedule_start', endOfDay.toISOString())
-    .in('booking.status', ['queued', 'in_progress']);
+    .in('booking.status', ['confirmed', 'in_progress']);
 
   if (assignmentsError) {
     console.error(`Error fetching assignments for mechanic ${mechanic.id}:`, assignmentsError);
+    console.error('Assignment error details:', JSON.stringify(assignmentsError, null, 2));
     // Return status with zero workload on error
     return {
       mechanicId: mechanic.id,
@@ -189,24 +190,34 @@ export async function getMechanicOverloadStatus(mechanicId: string): Promise<Ove
     };
   }
 
+  console.log(`[Mechanic ${mechanic.name}] Assignments found:`, assignments?.length || 0);
+  
   const bookings = (assignments as unknown as AssignmentData[])?.map(a => a.booking) || [];
-  const queuedBookings = bookings.filter((b: BookingData) => b.status === 'queued').length;
+  console.log(`[Mechanic ${mechanic.name}] Bookings extracted:`, bookings.length);
+  
+  const queuedBookings = bookings.filter((b: BookingData) => b.status === 'confirmed').length;
   const inProgressBookings = bookings.filter((b: BookingData) => b.status === 'in_progress').length;
+  
+  console.log(`[Mechanic ${mechanic.name}] Queued: ${queuedBookings}, In Progress: ${inProgressBookings}`);
   
   // Calculate total workload in minutes by summing service durations
   let totalWorkloadMinutes = 0;
   for (const booking of bookings) {
-    if (booking.booking_services && Array.isArray(booking.booking_services)) {
+    if (booking.booking_services && Array.isArray(booking.booking_services) && booking.booking_services.length > 0) {
       const bookingDuration = booking.booking_services.reduce(
         (sum: number, bs: { duration_minutes: number }) => sum + (bs.duration_minutes || 60), 
         0
       );
+      console.log(`[Mechanic ${mechanic.name}] Booking ${booking.id}: ${bookingDuration} minutes (${booking.booking_services.length} services)`);
       totalWorkloadMinutes += bookingDuration;
     } else {
       // Default 1 hour if no services data
+      console.log(`[Mechanic ${mechanic.name}] Booking ${booking.id}: 60 minutes (default, no services)`);
       totalWorkloadMinutes += 60;
     }
   }
+
+  console.log(`[Mechanic ${mechanic.name}] Total workload: ${totalWorkloadMinutes}/${maxCapacityMinutes} minutes`);
 
   const workloadPercentage = (totalWorkloadMinutes / maxCapacityMinutes) * 100;
   const isOverloaded = workloadPercentage >= 80; // 80% threshold

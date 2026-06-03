@@ -45,6 +45,17 @@ export default async function AuditLogsPage({
 
   const auditData = await getAuditLogs(page, 50, filters);
 
+  // Helper function to build query string with filters
+  const buildQueryString = (pageNum: number) => {
+    const queryParams = new URLSearchParams();
+    queryParams.set('page', pageNum.toString());
+    if (filters.entity) queryParams.set('entity', filters.entity);
+    if (filters.action) queryParams.set('action', filters.action);
+    if (filters.start_date) queryParams.set('start_date', filters.start_date);
+    if (filters.end_date) queryParams.set('end_date', filters.end_date);
+    return queryParams.toString();
+  };
+
   const formatDateTime = (isoString: string) => {
     const date = formatDateWIB(isoString);
     const time = formatTimeWIB(isoString);
@@ -286,7 +297,7 @@ export default async function AuditLogsPage({
         <div className="flex justify-center items-center space-x-3">
           {page > 1 && (
             <Link
-              href={`?page=${page - 1}&${new URLSearchParams(filters as Record<string, string>).toString()}`}
+              href={`?${buildQueryString(page - 1)}`}
               className="px-6 py-3 bg-white border-2 border-blue-300 rounded-lg hover:bg-blue-50 transition-colors font-semibold text-blue-700 flex items-center"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -302,7 +313,7 @@ export default async function AuditLogsPage({
           
           {page < auditData.totalPages && (
             <Link
-              href={`?page=${page + 1}&${new URLSearchParams(filters as Record<string, string>).toString()}`}
+              href={`?${buildQueryString(page + 1)}`}
               className="px-6 py-3 bg-white border-2 border-blue-300 rounded-lg hover:bg-blue-50 transition-colors font-semibold text-blue-700 flex items-center"
             >
               Selanjutnya

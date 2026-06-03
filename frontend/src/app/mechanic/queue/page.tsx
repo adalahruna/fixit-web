@@ -68,17 +68,38 @@ export default async function MechanicQueuePage({
         ),
         booking_consultations (
           complaint_text
-        ),
-        service_progress (
-          status,
-          start_time,
-          end_time
         )
       )
     `)
     .eq('mechanic_id', mechanic.id);
 
   const { data: assignmentsRaw } = await query;
+  
+  // Fetch service_progress separately to avoid RLS issues
+  const bookingIds = assignmentsRaw?.map(a => a.booking?.id).filter(Boolean) || [];
+  
+  let progressMap: Record<string, any> = {};
+  if (bookingIds.length > 0) {
+    const { data: progressData } = await supabase
+      .from('service_progress')
+      .select('*')
+      .in('booking_id', bookingIds);
+    
+    if (progressData) {
+      progressMap = progressData.reduce((acc: Record<string, any>, p: any) => {
+        acc[p.booking_id] = p;
+        return acc;
+      }, {});
+    }
+  }
+  
+  // Attach progress to bookings
+  assignmentsRaw?.forEach(assignment => {
+    if (assignment.booking) {
+      const progress = progressMap[assignment.booking.id];
+      assignment.booking.service_progress = progress ? [progress] : [];
+    }
+  });
   
   // Sort by queue_position
   const assignments = assignmentsRaw?.sort((a, b) => {
@@ -156,6 +177,35 @@ export default async function MechanicQueuePage({
     return labels[status] || status;
   };
 
+  const getPriorityBadge = (priority: number | null | undefined) => {
+    if (!priority) return null;
+    
+    const configs: Record<number, { label: string; className: string; icon: string }> = {
+      1: { 
+        label: '🔥 URGENT', 
+        className: 'bg-gradient-to-r from-red-500 to-red-600 text-white',
+        icon: '🔥'
+      },
+      2: { 
+        label: '⚡ HIGH', 
+        className: 'bg-gradient-to-r from-orange-500 to-orange-600 text-white',
+        icon: '⚡'
+      },
+      3: { 
+        label: '📋 NORMAL', 
+        className: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white',
+        icon: '📋'
+      },
+      4: { 
+        label: '⏰ LOW', 
+        className: 'bg-gradient-to-r from-gray-400 to-gray-500 text-white',
+        icon: '⏰'
+      },
+    };
+    
+    return configs[priority] || null;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <RealtimeBookingList />
@@ -228,6 +278,8 @@ export default async function MechanicQueuePage({
               const progress = booking.service_progress && booking.service_progress.length > 0 
                 ? booking.service_progress[0] 
                 : null;
+              const progressStatus = progress?.status || 'queued';
+              const priorityConfig = getPriorityBadge(booking.priority);
 
               return (
                 <div
@@ -248,11 +300,28 @@ export default async function MechanicQueuePage({
                           <p className="text-sm text-gray-600 font-mono font-semibold">{booking.vehicle_plate}</p>
                         </div>
                       </div>
-                      {progress && progress.status && (
-                        <span className={`px-4 py-2 text-sm font-semibold rounded-xl ${getStatusBadge(progress.status)}`}>
-                          {getStatusLabel(progress.status)}
+                      <div className="flex flex-col gap-2 items-end">
+                        {/* Priority Badge */}
+                        {priorityConfig && (
+                          <span className={`px-3 py-1.5 text-xs font-bold rounded-lg shadow-md ${priorityConfig.className} animate-pulse`}>
+                            {priorityConfig.label}
+                          </span>
+                        )}
+                        {/* Status Progress Badge - ALWAYS SHOW */}
+                        <span className={`px-4 py-2 text-sm font-bold rounded-xl shadow-md border-2 ${
+                          progressStatus === 'in_progress' 
+                            ? 'bg-green-500 text-white border-green-600' 
+                            : progressStatus === 'done'
+                            ? 'bg-gray-500 text-white border-gray-600'
+                            : 'bg-purple-500 text-white border-purple-600'
+                        }`}>
+                          {progressStatus === 'in_progress' 
+                            ? '⚡ SEDANG DIKERJAKAN' 
+                            : progressStatus === 'done'
+                            ? '✅ SELESAI'
+                            : '📋 DALAM ANTRIAN'}
                         </span>
-                      )}
+                      </div>
                     </div>
 
                     {/* Details Grid */}
