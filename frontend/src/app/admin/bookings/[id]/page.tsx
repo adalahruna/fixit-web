@@ -8,7 +8,6 @@ import RealtimeBookingStatus from '@/components/bookings/RealtimeBookingStatus';
 import SLAWarning from '@/components/warnings/SLAWarning';
 import OverloadWarning from '@/components/warnings/OverloadWarning';
 import { getBookingSLAStatus } from '@/lib/utils/sla-calculation';
-import PrioritySelector from '@/components/bookings/PrioritySelector';
 
 export default async function AdminBookingDetailPage({
   params,
@@ -412,14 +411,6 @@ export default async function AdminBookingDetailPage({
 
         {/* Sidebar - Assignment Enhanced */}
         <div className="lg:col-span-1">
-          {/* Priority Selector */}
-          <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 mb-6">
-            <PrioritySelector 
-              bookingId={booking.id} 
-              currentPriority={booking.priority || 3} 
-            />
-          </div>
-
           {/* Assignment Section */}
           <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 sticky top-6">
             <div className="flex items-center gap-3 mb-6">

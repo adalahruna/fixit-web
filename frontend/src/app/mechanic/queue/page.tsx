@@ -80,26 +80,13 @@ export default async function MechanicQueuePage({
 
   const { data: assignmentsRaw } = await query;
   
-  // Sort by priority first, then queue_position
+  // Sort by queue_position
   const assignments = assignmentsRaw?.sort((a, b) => {
-    const priorityA = a.booking?.priority || 3;
-    const priorityB = b.booking?.priority || 3;
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB; // Lower priority number = higher priority
-    }
     return a.queue_position - b.queue_position;
   });
 
   // Apply filters on client side (because of nested relations)
   let filteredAssignments = assignments || [];
-
-  if (params.priority) {
-    const priorityNum = parseInt(params.priority as string);
-    filteredAssignments = filteredAssignments.filter((assignment) => {
-      const booking = assignment.booking;
-      return (booking?.priority || 3) === priorityNum;
-    });
-  }
 
   if (params.status) {
     filteredAssignments = filteredAssignments.filter((assignment) => {
@@ -169,16 +156,6 @@ export default async function MechanicQueuePage({
     return labels[status] || status;
   };
 
-  const getPriorityBadge = (priority: number) => {
-    const styles: Record<number, { bg: string; text: string; label: string; icon: string }> = {
-      1: { bg: 'bg-red-100', text: 'text-red-800', label: 'Urgent', icon: '🔥' },
-      2: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'High', icon: '⚡' },
-      3: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Normal', icon: '📋' },
-      4: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Low', icon: '📌' },
-    };
-    return styles[priority] || styles[3];
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <RealtimeBookingList />
@@ -206,7 +183,7 @@ export default async function MechanicQueuePage({
 
         {/* Filters Section */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <BookingFilters showPriorityFilter={true} />
+          <BookingFilters showPriorityFilter={false} />
         </div>
 
         {/* Queue List */}
@@ -251,7 +228,6 @@ export default async function MechanicQueuePage({
               const progress = booking.service_progress && booking.service_progress.length > 0 
                 ? booking.service_progress[0] 
                 : null;
-              const priorityInfo = getPriorityBadge(booking.priority || 3);
 
               return (
                 <div
@@ -266,14 +242,9 @@ export default async function MechanicQueuePage({
                           #{assignment.queue_position}
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-xl font-bold text-gray-900">
-                              {booking.vehicle_type}
-                            </h3>
-                            <span className={`px-2 py-1 text-xs font-bold rounded-lg ${priorityInfo.bg} ${priorityInfo.text}`}>
-                              {priorityInfo.icon} {priorityInfo.label}
-                            </span>
-                          </div>
+                          <h3 className="text-xl font-bold text-gray-900">
+                            {booking.vehicle_type}
+                          </h3>
                           <p className="text-sm text-gray-600 font-mono font-semibold">{booking.vehicle_plate}</p>
                         </div>
                       </div>

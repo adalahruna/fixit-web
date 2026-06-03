@@ -265,7 +265,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
             <i className="fa-solid fa-motorcycle text-blue-600 text-xl" suppressHydrationWarning></i>
-            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Detail Kendaraan</h2>
+            <h2 className="text-lg font-bold text-gray-900">Detail Kendaraan</h2>
           </div>
           
           <div className="grid grid-cols-2 gap-5">
@@ -312,7 +312,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
         <div>
           <div className="flex items-center gap-3 mb-5">
             <i className="fa-solid fa-screwdriver-wrench text-blue-600 text-xl" suppressHydrationWarning></i>
-            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Jenis Servis</h2>
+            <h2 className="text-lg font-bold text-gray-900">Jenis Servis</h2>
           </div>
           
           <div className="grid grid-cols-3 gap-5">
@@ -359,7 +359,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
         <div className="bg-gray-100 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-6">
             <i className="fa-regular fa-calendar-days text-blue-600 text-xl" suppressHydrationWarning></i>
-            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Jadwal Service</h2>
+            <h2 className="text-lg font-bold text-gray-900">Jadwal Service</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-5 mb-6">
@@ -424,7 +424,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
         <div>
           <div className="flex items-center gap-3 mb-5">
             <i className="fa-regular fa-file-lines text-blue-600 text-xl" suppressHydrationWarning></i>
-            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Keluhan / Konsultasi</h2>
+            <h2 className="text-lg font-bold text-gray-900">Keluhan / Konsultasi</h2>
           </div>
           
           <textarea
