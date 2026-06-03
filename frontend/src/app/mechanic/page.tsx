@@ -96,9 +96,6 @@ export default async function MechanicDashboard() {
     return item;
   });
 
-  const currentHour = new Date().getHours();
-  const greeting = currentHour < 12 ? 'Selamat Pagi' : currentHour < 18 ? 'Selamat Siang' : 'Selamat Malam';
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -112,7 +109,7 @@ export default async function MechanicDashboard() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">{greeting}, {user.name}!</h1>
+                <h1 className="text-3xl font-bold text-white">Selamat Datang, {user.name}!</h1>
                 <p className="text-blue-100 mt-1">Siap untuk menyelesaikan pekerjaan hari ini</p>
               </div>
             </div>
