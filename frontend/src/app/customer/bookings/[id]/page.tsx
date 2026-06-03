@@ -5,6 +5,7 @@ import Link from 'next/link';
 import RescheduleButton from '@/components/bookings/RescheduleButton';
 import CancelButton from '@/components/bookings/CancelButton';
 import RealtimeBookingStatus from '@/components/bookings/RealtimeBookingStatus';
+import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
 
 export default async function BookingDetailPage({
   params,
@@ -55,16 +56,6 @@ export default async function BookingDetailPage({
     notFound();
   }
 
-  // Debug: Log service_progress data
-  console.log('=== DEBUG: Customer Booking Detail ===');
-  console.log('Booking ID:', booking.id);
-  console.log('Booking Status:', booking.status);
-  console.log('Assignments:', JSON.stringify(booking.assignments, null, 2));
-  console.log('Service Progress:', JSON.stringify(booking.service_progress, null, 2));
-  console.log('Is Array?', Array.isArray(booking.service_progress));
-  console.log('Length:', booking.service_progress?.length);
-  console.log('Has Assignment?', booking.assignments?.length > 0);
-
   // Normalize service_progress to handle both array and object
   const serviceProgress = Array.isArray(booking.service_progress) 
     ? (booking.service_progress.length > 0 ? booking.service_progress[0] : null)
@@ -74,10 +65,6 @@ export default async function BookingDetailPage({
   const assignment = Array.isArray(booking.assignments)
     ? (booking.assignments.length > 0 ? booking.assignments[0] : null)
     : booking.assignments;
-
-  console.log('ServiceProgress normalized:', serviceProgress);
-  console.log('Assignment normalized:', assignment);
-  console.log('=====================================');
 
   // Calculate total price
   const totalPrice = booking.booking_services?.reduce((sum: number, bs: { service_type?: { price?: number } }) => {
@@ -149,11 +136,7 @@ export default async function BookingDetailPage({
                   <div>
                     <label className="block text-xs text-gray-600 font-semibold mb-1">Tanggal</label>
                     <span className="block text-base font-bold text-gray-900">
-                      {new Date(booking.schedule_start).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
+                      {formatDateWIB(booking.schedule_start)}
                     </span>
                   </div>
                 </div>
@@ -166,10 +149,7 @@ export default async function BookingDetailPage({
                   <div>
                     <label className="block text-xs text-gray-600 font-semibold mb-1">Waktu Mulai</label>
                     <span className="block text-base font-bold text-gray-900">
-                      {new Date(booking.schedule_start).toLocaleTimeString('id-ID', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })} WIB
+                      {formatTimeWIB(booking.schedule_start)} WIB
                     </span>
                   </div>
                 </div>
@@ -183,10 +163,7 @@ export default async function BookingDetailPage({
                     <div>
                       <label className="block text-xs text-gray-600 font-semibold mb-1">Est. Selesai</label>
                       <span className="block text-base font-bold text-gray-900">
-                        {new Date(booking.schedule_end).toLocaleTimeString('id-ID', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })} WIB
+                        {formatTimeWIB(booking.schedule_end)} WIB
                       </span>
                     </div>
                   </div>
@@ -342,12 +319,12 @@ export default async function BookingDetailPage({
         {assignment && (
           <div className="px-10 pb-8">
             <h3 className="text-lg font-extrabold text-gray-900 mb-4">Informasi Mekanik & Progres</h3>
-            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+            <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-6 space-y-4 border border-gray-200">
               <div>
-                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">
                   Mekanik
                 </label>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-base font-bold text-gray-900">
                   {assignment.mechanic.name}
                 </p>
               </div>
@@ -355,10 +332,10 @@ export default async function BookingDetailPage({
                 <>
                   {serviceProgress.status && (
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">
                         Status
                       </label>
-                      <span className={`inline-block px-3 py-1.5 text-xs font-bold rounded-full uppercase ${
+                      <span className={`inline-block px-4 py-2 text-xs font-bold rounded-xl uppercase shadow-sm ${
                         serviceProgress.status === 'queued' ? 'bg-purple-100 text-purple-700' :
                         serviceProgress.status === 'in_progress' ? 'bg-green-100 text-green-700' :
                         serviceProgress.status === 'done' ? 'bg-gray-100 text-gray-700' :
@@ -373,28 +350,44 @@ export default async function BookingDetailPage({
                   )}
                   {serviceProgress.start_time && (
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
-                        Waktu Mulai
+                      <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">
+                        Waktu Mulai Servis
                       </label>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {new Date(serviceProgress.start_time).toLocaleString('id-ID')}
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-base font-bold text-gray-900">
+                          {formatDateWIB(serviceProgress.start_time)}
+                        </p>
+                      </div>
+                      <p className="text-sm font-semibold text-blue-600 mt-1 ml-7">
+                        {formatTimeWIB(serviceProgress.start_time)} WIB
                       </p>
                     </div>
                   )}
                   {serviceProgress.end_time && (
                     <div>
-                      <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
-                        Waktu Selesai
+                      <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">
+                        Waktu Selesai Servis
                       </label>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {new Date(serviceProgress.end_time).toLocaleString('id-ID')}
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-base font-bold text-gray-900">
+                          {formatDateWIB(serviceProgress.end_time)}
+                        </p>
+                      </div>
+                      <p className="text-sm font-semibold text-green-600 mt-1 ml-7">
+                        {formatTimeWIB(serviceProgress.end_time)} WIB
                       </p>
                     </div>
                   )}
                 </>
               ) : (
-                <p className="text-sm text-gray-900 italic">
-                  Booking sudah di-assign ke mekanik. Menunggu mekanik memulai servis...
+                <p className="text-sm text-blue-900 italic bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  ⏳ Booking sudah di-assign ke mekanik. Menunggu mekanik memulai servis...
                 </p>
               )}
             </div>

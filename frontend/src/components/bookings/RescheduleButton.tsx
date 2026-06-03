@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import RescheduleForm from './RescheduleForm';
 import { useRouter } from 'next/navigation';
+import { Toast } from '@/components/ui';
 
 interface RescheduleButtonProps {
   bookingId: string;
@@ -16,6 +17,7 @@ export default function RescheduleButton({
   status,
 }: RescheduleButtonProps) {
   const [showForm, setShowForm] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
   const router = useRouter();
 
   // Check if reschedule is allowed based on status
@@ -33,7 +35,11 @@ export default function RescheduleButton({
 
   const handleSuccess = () => {
     setShowForm(false);
-    router.refresh();
+    setShowSuccessToast(true);
+    // Delay refresh to allow user to see the toast
+    setTimeout(() => {
+      router.refresh();
+    }, 500);
   };
 
   return (
@@ -66,6 +72,14 @@ export default function RescheduleButton({
             onCancel={() => setShowForm(false)}
           />
         </div>
+      )}
+
+      {showSuccessToast && (
+        <Toast
+          message="Booking berhasil di-reschedule!"
+          variant="success"
+          onClose={() => setShowSuccessToast(false)}
+        />
       )}
     </div>
   );

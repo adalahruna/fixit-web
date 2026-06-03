@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { cancelBooking } from '@/lib/bookings/cancel-actions';
 import { useRouter } from 'next/navigation';
-import { Button, Modal } from '@/components/ui';
+import { Button, Modal, Toast } from '@/components/ui';
 
 interface CancelButtonProps {
   bookingId: string;
@@ -19,6 +19,7 @@ export default function CancelButton({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
   const router = useRouter();
 
   const cancellableStatuses = ['pending', 'confirmed', 'queued'];
@@ -39,9 +40,13 @@ export default function CancelButton({
       setError(result.error);
       setIsLoading(false);
     } else {
-      router.refresh();
       setIsOpen(false);
       setIsLoading(false);
+      setShowSuccessToast(true);
+      // Delay refresh to allow user to see the toast
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
     }
   };
 
@@ -98,6 +103,14 @@ export default function CancelButton({
           </Button>
         </div>
       </Modal>
+
+      {showSuccessToast && (
+        <Toast
+          message="Booking berhasil dibatalkan!"
+          variant="success"
+          onClose={() => setShowSuccessToast(false)}
+        />
+      )}
     </div>
   );
 }
