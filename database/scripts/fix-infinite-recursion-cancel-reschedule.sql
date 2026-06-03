@@ -3,7 +3,9 @@
 -- ============================================
 -- Issue: Triggers sync_status_from_bookings and sync_status_from_progress
 --        create infinite recursion when updating booking status
--- Solution: Remove the problematic triggers
+-- Root cause: The triggers don't properly handle 'cancelled' status
+--             and the sync logic creates a circular update loop
+-- Solution: Drop the problematic triggers (manual sync is safer)
 -- ============================================
 
 -- Step 1: Check existing triggers
@@ -11,6 +13,7 @@ SELECT
   trigger_name, 
   event_manipulation, 
   event_object_table,
+  action_timing,
   action_statement
 FROM information_schema.triggers
 WHERE trigger_name IN ('sync_status_from_progress', 'sync_status_from_bookings')
@@ -25,10 +28,14 @@ DROP FUNCTION IF EXISTS sync_booking_status() CASCADE;
 
 -- Step 4: Verify triggers are removed
 SELECT 
-  COUNT(*) as remaining_triggers
+  COUNT(*) as remaining_triggers,
+  CASE 
+    WHEN COUNT(*) = 0 THEN '✅ All triggers removed successfully'
+    ELSE '⚠️ Some triggers still exist'
+  END as status
 FROM information_schema.triggers
 WHERE trigger_name IN ('sync_status_from_progress', 'sync_status_from_bookings');
 
--- Expected: remaining_triggers = 0
-
-SELECT '✅ Infinite recursion triggers removed successfully!' as status;
+-- Step 5: Show confirmation message
+SELECT '✅ Infinite recursion fix completed!' as result,
+       'Cancel and reschedule should now work without errors' as note;

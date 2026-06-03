@@ -501,11 +501,11 @@ export default function BookingFormClient({ services }: BookingFormProps) {
 
       <div className="w-[380px] sticky top-6 space-y-5">
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-extrabold mb-6">Ringkasan Pesanan</h2>
+          <h2 className="text-lg font-extrabold mb-6 text-gray-900">Ringkasan Pesanan</h2>
 
           <div className="space-y-4">
             <div>
-              <div className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+              <div className="text-sm font-bold text-gray-900 mb-2">
                 Layanan Terpilih
               </div>
               <div className="flex justify-between text-sm font-semibold">
@@ -517,7 +517,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </div>
 
             <div>
-              <div className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+              <div className="text-sm font-bold text-gray-900 mb-2">
                 Keluhan / Konsultasi
               </div>
               <div className="flex justify-between text-sm font-semibold">
@@ -527,7 +527,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </div>
 
             <div>
-              <div className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+              <div className="text-sm font-bold text-gray-900 mb-2">
                 Tanggal & Waktu
               </div>
               <div className="text-sm font-semibold flex items-center gap-2">
@@ -537,7 +537,7 @@ export default function BookingFormClient({ services }: BookingFormProps) {
             </div>
 
             <div>
-              <div className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+              <div className="text-sm font-bold text-gray-900 mb-2">
                 Kendaraan
               </div>
               <div className="text-sm font-semibold flex items-center gap-2">

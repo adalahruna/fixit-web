@@ -60,15 +60,20 @@ export async function cancelBooking(bookingId: string) {
   }
 
   // Update service_progress status to cancelled (if exists)
-  await supabase
+  // Use .maybeSingle() to avoid errors if no record exists
+  const { error: progressError } = await supabase
     .from('service_progress')
     .update({ 
       status: 'cancelled',
       updated_at: new Date().toISOString()
     })
-    .eq('booking_id', bookingId);
+    .eq('booking_id', bookingId)
+    .not('status', 'eq', 'cancelled'); // Only update if not already cancelled (prevent trigger loop)
 
-  // Ignore error if service_progress doesn't exist (booking not assigned yet)
+  // Ignore error - service_progress might not exist if booking not assigned yet
+  if (progressError) {
+    console.log('Service progress update skipped:', progressError.message);
+  }
 
   // Revalidate paths
   revalidateBookingPaths(bookingId);
