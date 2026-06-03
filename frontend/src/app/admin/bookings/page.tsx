@@ -5,6 +5,89 @@ import { formatDateWIB, formatTimeWIB } from '@/lib/utils/datetime';
 import RealtimeBookingList from '@/components/bookings/RealtimeBookingList';
 import BookingFilters from '@/components/bookings/BookingFilters';
 
+// Type for booking with service progress
+interface BookingWithProgress {
+  id: string;
+  status: string;
+  schedule_start: string;
+  booking_services?: Array<{
+    service_type?: {
+      name?: string;
+      default_duration_minutes?: number;
+    };
+  }>;
+  service_progress?: Array<{
+    start_time?: string;
+    end_time?: string;
+    status?: string;
+  }> | {
+    start_time?: string;
+    end_time?: string;
+    status?: string;
+  };
+}
+
+// Helper function to calculate SLA status from booking data
+function calculateSLAStatusFromBooking(booking: BookingWithProgress) {
+  if (!['in_progress', 'done'].includes(booking.status)) {
+    return { isLate: false, isAtRisk: false, delayMinutes: 0 };
+  }
+
+  try {
+    const scheduledStart = new Date(booking.schedule_start);
+    
+    // Calculate estimated duration from booking services
+    let estimatedDurationMinutes = 60; // Default 1 hour
+    
+    if (booking.booking_services && Array.isArray(booking.booking_services) && booking.booking_services.length > 0) {
+      estimatedDurationMinutes = 0;
+      for (const bs of booking.booking_services) {
+        const serviceType = bs.service_type;
+        if (serviceType && serviceType.default_duration_minutes) {
+          estimatedDurationMinutes += serviceType.default_duration_minutes;
+        }
+      }
+      if (estimatedDurationMinutes === 0) {
+        estimatedDurationMinutes = 60;
+      }
+    }
+    
+    const estimatedEnd = new Date(scheduledStart.getTime() + estimatedDurationMinutes * 60 * 1000);
+    const now = new Date();
+    
+    let isLate = false;
+    let isAtRisk = false;
+    let delayMinutes = 0;
+    
+    // Get service progress
+    const progress = Array.isArray(booking.service_progress) 
+      ? booking.service_progress[0] 
+      : booking.service_progress;
+    
+    if (booking.status === 'done' && progress?.end_time) {
+      const actualEnd = new Date(progress.end_time);
+      delayMinutes = Math.max(0, Math.round((actualEnd.getTime() - estimatedEnd.getTime()) / (1000 * 60)));
+      isLate = delayMinutes > 30; // 30 minutes tolerance
+    } else if (booking.status === 'in_progress' && progress?.start_time) {
+      const startTime = new Date(progress.start_time);
+      const elapsedMinutes = Math.round((now.getTime() - startTime.getTime()) / (1000 * 60));
+      const remainingMinutes = estimatedDurationMinutes - elapsedMinutes;
+      
+      isAtRisk = remainingMinutes <= 15 && remainingMinutes > 0;
+      
+      if (elapsedMinutes > estimatedDurationMinutes) {
+        delayMinutes = elapsedMinutes - estimatedDurationMinutes;
+        isLate = delayMinutes > 30;
+      }
+    }
+    
+    return { isLate, isAtRisk, delayMinutes };
+  } catch (error) {
+    console.error('Error calculating SLA status:', error);
+    return { isLate: false, isAtRisk: false, delayMinutes: 0 };
+  }
+}
+
 export default async function AdminBookingsPage({
   searchParams,
 }: {
@@ -33,7 +116,8 @@ export default async function AdminBookingsPage({
       ),
       booking_services (
         service_type:service_types (
-          name
+          name,
+          default_duration_minutes
         )
       ),
       booking_consultations (
@@ -44,6 +128,11 @@ export default async function AdminBookingsPage({
           id,
           name
         )
+      ),
+      service_progress (
+        start_time,
+        end_time,
+        status
       )
     `);
 
@@ -115,6 +204,13 @@ export default async function AdminBookingsPage({
   }).length;
   const activeBookings = filteredBookings.filter(b => ['confirmed', 'queued', 'in_progress'].includes(b.status)).length;
 
+  // Calculate late bookings for warning
+  const lateBookings = filteredBookings.filter(booking => {
+    if (!['in_progress', 'done'].includes(booking.status)) return false;
+    const slaStatus = calculateSLAStatusFromBooking(booking);
+    return slaStatus.isLate;
+  }).length;
+
   // Helper function to calculate wait time in minutes
   const getWaitTimeMinutes = (createdAt: string) => {
     const now = new Date();
@@ -177,6 +273,34 @@ export default async function AdminBookingsPage({
       4: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Low', icon: '📌' },
     };
     return styles[priority] || styles[3];
+  };
+
+  // Helper function to get SLA status badge
+  const getSLAStatusBadge = (booking: typeof filteredBookings[0]) => {
+    // Only check SLA for in_progress and done bookings
+    if (!['in_progress', 'done'].includes(booking.status)) {
+      return null;
+    }
+
+    const slaStatus = calculateSLAStatusFromBooking(booking);
+    
+    if (slaStatus.isLate) {
+      return {
+        color: 'bg-red-100 text-red-800 border-red-300',
+        label: `⚠️ Terlambat ${slaStatus.delayMinutes} menit`,
+        icon: '🔴',
+        priority: 'high'
+      };
+    } else if (slaStatus.isAtRisk && booking.status === 'in_progress') {
+      return {
+        color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+        label: `⏰ Risiko keterlambatan`,
+        icon: '⚠️',
+        priority: 'medium'
+      };
+    }
+    
+    return null;
   };
 
   return (
@@ -270,6 +394,25 @@ export default async function AdminBookingsPage({
           <BookingFilters showMechanicFilter={true} mechanics={mechanics || []} />
         </div>
 
+        {/* Warning for late bookings */}
+        {lateBookings > 0 && (
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 p-5 rounded-xl mb-8 shadow-md">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <h3 className="text-red-800 font-semibold">⚠️ Peringatan SLA: {lateBookings} booking melebihi estimasi waktu</h3>
+                <p className="text-red-700 text-sm mt-1">
+                  Beberapa booking melewati batas toleransi waktu pengerjaan (30 menit). Segera koordinasikan dengan mekanik untuk menghindari komplain customer.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Bookings List */}
         {!filteredBookings || filteredBookings.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 shadow-xl text-center border border-gray-100">
@@ -315,6 +458,9 @@ export default async function AdminBookingsPage({
                       Status
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      SLA Status
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       Mekanik
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -325,8 +471,9 @@ export default async function AdminBookingsPage({
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredBookings.map((booking) => {
                     const waitTimeBadge = getWaitTimeBadge(booking);
+                    const slaStatusBadge = getSLAStatusBadge(booking);
                     return (
-                      <tr key={booking.id} className="hover:bg-gray-50 transition-colors duration-150">
+                      <tr key={booking.id} className={`hover:bg-gray-50 transition-colors duration-150 ${slaStatusBadge?.priority === 'high' ? 'bg-red-50/30' : ''}`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {waitTimeBadge ? (
                             <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full border ${waitTimeBadge.color}`}>
@@ -389,6 +536,15 @@ export default async function AdminBookingsPage({
                               );
                             })()}
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {slaStatusBadge ? (
+                            <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full border ${slaStatusBadge.color}`}>
+                              {slaStatusBadge.label}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-xs">-</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {booking.assignments && (Array.isArray(booking.assignments) 

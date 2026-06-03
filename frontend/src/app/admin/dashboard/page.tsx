@@ -29,12 +29,6 @@ export default async function KPIDashboardPage({
     }).format(amount);
   };
 
-  const getStatusColor = (value: number, thresholds: { good: number; warning: number }) => {
-    if (value >= thresholds.good) return 'text-green-600';
-    if (value >= thresholds.warning) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
   return (
     <div className="space-y-6">
       {/* Header with Enhanced Design */}

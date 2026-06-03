@@ -278,28 +278,21 @@ export async function calculateKPIMetrics(
     ? Math.round((totalUsedMinutes / totalCapacityMinutes) * 100)
     : 0;
 
-  // Calculate revenue (REAL - only from completed bookings)
+  // Calculate revenue (REAL - from all non-cancelled bookings to show committed revenue)
   let totalRevenue = 0;
   let totalBookingValue = 0;
   
   bookings?.forEach(booking => {
-    // Only count revenue from completed bookings (status = 'done')
-    if (booking.status === 'done' && booking.booking_services && Array.isArray(booking.booking_services)) {
+    // Count revenue from all non-cancelled bookings (committed revenue)
+    // This includes: confirmed, queued, in_progress, and done
+    if (booking.status !== 'cancelled' && booking.booking_services && Array.isArray(booking.booking_services)) {
       const bookingRevenue = booking.booking_services.reduce((sum, bs) => {
         const serviceType = bs.service_type;
         // Treat NULL prices as 0
         return sum + (serviceType?.price || 0);
       }, 0);
       totalRevenue += bookingRevenue;
-    }
-    
-    // For average booking value, include all non-cancelled bookings
-    if (booking.status !== 'cancelled' && booking.booking_services && Array.isArray(booking.booking_services)) {
-      const bookingValue = booking.booking_services.reduce((sum, bs) => {
-        const serviceType = bs.service_type;
-        return sum + (serviceType?.price || 0);
-      }, 0);
-      totalBookingValue += bookingValue;
+      totalBookingValue += bookingRevenue;
     }
   });
 
@@ -355,7 +348,7 @@ export async function calculateKPIMetrics(
     count: hourlyDistribution.get(hour) || 0
   })).filter(item => item.count > 0);
 
-  // Weekly trend (last 4 weeks)
+  // Weekly trend (last 4 weeks) - use schedule_start for consistency
   const weeklyTrend = [];
   for (let i = 3; i >= 0; i--) {
     const weekStart = new Date(end);
@@ -364,12 +357,12 @@ export async function calculateKPIMetrics(
     weekEnd.setDate(weekEnd.getDate() + 6);
     
     const weekBookings = bookings?.filter(b => {
-      const bookingDate = new Date(b.created_at);
+      const bookingDate = new Date(b.schedule_start); // Use schedule_start for consistency
       return bookingDate >= weekStart && bookingDate <= weekEnd;
     }) || [];
 
     const weekRevenue = weekBookings.reduce((sum, booking) => {
-      if (booking.booking_services && Array.isArray(booking.booking_services)) {
+      if (booking.status !== 'cancelled' && booking.booking_services && Array.isArray(booking.booking_services)) {
         return sum + booking.booking_services.reduce((serviceSum, bs) => {
           const serviceType = bs.service_type;
           return serviceSum + (serviceType?.price || 0);
